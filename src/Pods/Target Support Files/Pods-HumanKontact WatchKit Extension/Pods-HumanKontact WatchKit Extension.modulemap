@@ -1,0 +1,6 @@
+framework module Pods_HumanKontact_WatchKit_Extension {
+  umbrella header "Pods-HumanKontact WatchKit Extension-umbrella.h"
+
+  export *
+  module * { export * }
+}

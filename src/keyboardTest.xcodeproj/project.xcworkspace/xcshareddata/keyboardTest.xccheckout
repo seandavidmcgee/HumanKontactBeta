@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>551C4A6E-9A08-4B66-94D7-32521463E4C8</string>
+	<key>IDESourceControlProjectName</key>
+	<string>keyboardTest</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>04389F6E1679D3D9B1ED478DF50625C019AC6720</key>
+		<string>https://github.com/neetin/keyboardLayoutiOS.git</string>
+		<key>09C5C0715506BB049CCA8345F95033A47903ECE3</key>
+		<string>https://github.com/GabrielAlva/Swift-Prompts.git</string>
+		<key>C23231E5EFD93B6A993CB3835D46F61DAF0EBC9F</key>
+		<string>https://github.com/uacaps/PageMenu.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>keyboardTest.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>04389F6E1679D3D9B1ED478DF50625C019AC6720</key>
+		<string>../..</string>
+		<key>09C5C0715506BB049CCA8345F95033A47903ECE3</key>
+		<string>../../../Swift-Prompts</string>
+		<key>C23231E5EFD93B6A993CB3835D46F61DAF0EBC9F</key>
+		<string>../../../PageMenu</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/neetin/keyboardLayoutiOS.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>04389F6E1679D3D9B1ED478DF50625C019AC6720</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>04389F6E1679D3D9B1ED478DF50625C019AC6720</string>
+			<key>IDESourceControlWCCName</key>
+			<string>keyboardLayoutiOS</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>C23231E5EFD93B6A993CB3835D46F61DAF0EBC9F</string>
+			<key>IDESourceControlWCCName</key>
+			<string>PageMenu</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>09C5C0715506BB049CCA8345F95033A47903ECE3</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Swift-Prompts</string>
+		</dict>
+	</array>
+</dict>
+</plist>
