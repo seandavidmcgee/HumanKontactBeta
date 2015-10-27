@@ -10,6 +10,8 @@
 	<string>keyboardTest</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
+		<key>A74626CE6D1C2D73717655C7BFEC9DBBBC96751B</key>
+		<string>https://github.com/yoavlt/LiquidFloatingActionButton.git</string>
 		<key>D3EB558EA0849EF2D5B0E8AB90D8BA59D8558DFF</key>
 		<string>https://github.com/seandavidmcgee/HumanKontact.git</string>
 	</dict>
@@ -17,6 +19,8 @@
 	<string>src/keyboardTest.xcworkspace</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
+		<key>A74626CE6D1C2D73717655C7BFEC9DBBBC96751B</key>
+		<string>../../../GitDesktopProjects/LiquidFloatingActionButton</string>
 		<key>D3EB558EA0849EF2D5B0E8AB90D8BA59D8558DFF</key>
 		<string>../..</string>
 	</dict>
@@ -35,6 +39,14 @@
 			<string>D3EB558EA0849EF2D5B0E8AB90D8BA59D8558DFF</string>
 			<key>IDESourceControlWCCName</key>
 			<string>HumanKontact</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>A74626CE6D1C2D73717655C7BFEC9DBBBC96751B</string>
+			<key>IDESourceControlWCCName</key>
+			<string>LiquidFloatingActionButton</string>
 		</dict>
 	</array>
 </dict>

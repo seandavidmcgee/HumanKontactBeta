@@ -52,16 +52,16 @@ class GoogleWearAlert: NSObject {
     var alertActive:Bool = false
     var timer: NSTimer?
     
-    class func showAlert(#title:String, type:GoogleWearAlertType) {
+    class func showAlert(title title:String, type:GoogleWearAlertType) {
         showAlert(title:title, image: nil, type: type, inViewController: GoogleWearAlert.sharedInstance.useDefaultController())
     }
     
-    class func showAlert(#title:String, image:UIImage?, type:GoogleWearAlertType, duration:Double = 2.5, inViewController:UIViewController) {
+    class func showAlert(title title:String, image:UIImage?, type:GoogleWearAlertType, duration:Double = 2.5, inViewController:UIViewController) {
         showAlert(title: title, image: image, type: type, duration: duration, inViewController: inViewController, atPostion: .Center, canBeDismissedByUser: true)
     }
     
-    class func showAlert(#title:String, image:UIImage?, type:GoogleWearAlertType, duration:Double, inViewController:UIViewController, atPostion:GoogleWearAlertPosition, canBeDismissedByUser:Bool) {
-        var alertView = GoogleWearAlertView(title: title, image: image, type: type, duration: duration, viewController: inViewController, position: atPostion, canbeDismissedByUser: canBeDismissedByUser)
+    class func showAlert(title title:String, image:UIImage?, type:GoogleWearAlertType, duration:Double, inViewController:UIViewController, atPostion:GoogleWearAlertPosition, canBeDismissedByUser:Bool) {
+        let alertView = GoogleWearAlertView(title: title, image: image, type: type, duration: duration, viewController: inViewController, position: atPostion, canbeDismissedByUser: canBeDismissedByUser)
         
         GoogleWearAlert.sharedInstance.prepareNotificationToBeShown(alertView)
     }
@@ -69,7 +69,7 @@ class GoogleWearAlert: NSObject {
     
     func prepareNotificationToBeShown(alert:GoogleWearAlertView) {
         
-        var title = alert.titleLabel
+        let title = alert.titleLabel
         for message: AnyObject in alertQueue {
             if message.titleLabel == title {
                 return
@@ -89,16 +89,16 @@ class GoogleWearAlert: NSObject {
         
         alertActive = true;
         
-        var scale = CGAffineTransformMakeScale(0.1, 0.1)
-        var rotate = CGAffineTransformRotate(scale, CGFloat(M_PI))
-        var transform = CGAffineTransformConcat(scale, rotate)
+        let scale = CGAffineTransformMakeScale(0.1, 0.1)
+        let rotate = CGAffineTransformRotate(scale, CGFloat(M_PI))
+        let transform = CGAffineTransformConcat(scale, rotate)
         
-        var currentView = alertQueue.firstObject as! GoogleWearAlertView
+        let currentView = alertQueue.firstObject as! GoogleWearAlertView
         currentView.transform = transform
         
         bgWindow.windowLevel = UIWindowLevelAlert
         bgWindow.backgroundColor = UIColor.blackColor().colorWithAlphaComponent(0.1)
-        var windowFrame = UIScreen.mainScreen().applicationFrame
+        let windowFrame = UIScreen.mainScreen().bounds
         bgWindow.frame = CGRectMake(windowFrame.origin.x, windowFrame.origin.y - 20, windowFrame.size.width, windowFrame.size.height + 20)
         bgWindow.hidden = true
         bgWindow.addSubview(currentView)
@@ -119,12 +119,12 @@ class GoogleWearAlert: NSObject {
                 currentView.messageIsFullyDisplayed = true
             })
         
-        var timeInterval = NSTimeInterval(currentView.duration!)
+        let timeInterval = NSTimeInterval(currentView.duration!)
         timer = NSTimer.scheduledTimerWithTimeInterval(timeInterval, target: self, selector: Selector("removeAlert:"), userInfo:["currentView" : currentView], repeats: false)
     }
     
     func removeAlert(timer:NSTimer) {
-        var currentView = timer.userInfo?.objectForKey("currentView") as! GoogleWearAlertView
+        let currentView = timer.userInfo?.objectForKey("currentView") as! GoogleWearAlertView
         removeCurrentAlert(currentView)
     }
     
@@ -137,7 +137,7 @@ class GoogleWearAlert: NSObject {
             delay: 0.0,
             usingSpringWithDamping: springDamping,
             initialSpringVelocity: springVelocity,
-            options:.CurveLinear | .AllowUserInteraction,
+            options:[.CurveLinear, .AllowUserInteraction],
             animations: {
                 
                 currentView.transform = CGAffineTransformMakeScale(1.1, 1.1)
@@ -149,7 +149,7 @@ class GoogleWearAlert: NSObject {
                     delay: 0.0,
                     usingSpringWithDamping: self.springDamping,
                     initialSpringVelocity: self.springVelocity,
-                    options:.CurveLinear | .AllowUserInteraction,
+                    options:[.CurveLinear, .AllowUserInteraction],
                     animations: {
                         self.bgWindow.alpha = 0.0
                         currentView.transform = CGAffineTransformMakeScale(0.1, 0.1)

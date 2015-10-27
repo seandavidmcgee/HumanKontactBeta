@@ -8,11 +8,14 @@
 
 import UIKit
 import Foundation
+import Hokusai
+import RealmSwift
 
 class FriendTableViewCell: UITableViewCell, UIScrollViewDelegate {
     var person: HKPerson! = nil
-    var favPerson: HKFavorite! = nil
     var photoImageView: UIImageView! = UIImageView()
+    var backgroundClipView = UIView()
+    var backgroundColorView = UIView()
     var initialsLabel: UILabel! = UILabel()
     var nameLabel: UILabel! = UILabel()
     var radius: CGFloat = 0
@@ -33,7 +36,6 @@ class FriendTableViewCell: UITableViewCell, UIScrollViewDelegate {
     var mobileTxtBtnImage: UIImage! = UIImage(named:"Messaging")
     var iPhoneTxtBtnImage: UIImage! = UIImage(named:"MessageiPhone")
     var emailBtnImage: UIImage! = UIImage(named:"Email")
-    var sourceTag: UIView = UIView()
     var BitmapOverlay = UIImage(named: "BitmapOverlayBG")
     var cardImageView = UIImageView()
     var scrollview = UIScrollView()
@@ -42,51 +44,56 @@ class FriendTableViewCell: UITableViewCell, UIScrollViewDelegate {
     
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
-        let initialViewWidth = appDelegate.centerViewController.view.frame.width
+        let screenSize = UIScreen.mainScreen().bounds
+        let screenWidth = screenSize.width
         
-        self.frame = CGRect(x: 0, y: 0, width: initialViewWidth, height: 74)
+        self.frame = CGRect(x: 0, y: 0, width: screenWidth, height: 74)
         self.backgroundColor = UIColor.clearColor()
         self.contentView.backgroundColor = UIColor.clearColor()
         configureView()
     }
     
     required init(coder decoder: NSCoder) {
-        super.init(coder: decoder)
+        super.init(coder: decoder)!
         configureView()
     }
     
     func configureView() {
         // Initialization code
-        friendCardView.frame = CGRect(x: 5, y: 10, width: self.frame.width-10, height: self.frame.height-10)
-        
-        cardImageView.image = BitmapOverlay
-        cardImageView.frame = CGRect(x: 0, y: 0, width: friendCardView.frame.width, height: friendCardView.frame.height)
-        cardImageView.contentMode = UIViewContentMode.ScaleAspectFill
-        cardImageView.alpha = 0.5
-        cardImageView.clipsToBounds = true
-        friendCardView.addSubview(cardImageView)
-        
+        friendCardView.frame = CGRect(x: 36, y: 0, width: self.frame.width - 36, height: self.frame.height)
         friendCardView.layer.cornerRadius = radius
         friendCardView.tag = 94
+        friendCardView.layer.addBorder(.Bottom, color: UIColor(red: 245/255, green: 246/255, blue: 247/255, alpha: 0.4), thickness: 0.5)
         
-        photoImageView.frame = CGRect(x: 14, y: 6, width: 42, height: 42)
+        backgroundClipView.frame = CGRect(x: 0, y: 0, width: 52, height: 52)
+        backgroundClipView.clipsToBounds = true
+        
+        backgroundColorView.frame = CGRect(x: 0, y: 8, width: 52, height: 52)
+        backgroundColorView.layer.cornerRadius = backgroundColorView.frame.width / 2.0
+        backgroundColorView.clipsToBounds = true
+        
+        photoImageView.frame = CGRect(x: 0, y: 8, width: 52, height: 52)
         photoImageView.layer.cornerRadius = photoImageView!.frame.width / 2.0
         photoImageView.clipsToBounds = true
         photoImageView.tag = 200
+        photoImageView.opaque = true
+        photoImageView.layer.borderWidth = 2
         initialsLabel.frame = CGRect(x: 0, y: 0, width: photoImageView.frame.width, height: photoImageView.frame.height)
         initialsLabel.font = UIFont(name: "HelveticaNeue-Thin", size: 21)!
-        initialsLabel.textColor = UIColor.whiteColor()
+        initialsLabel.textColor = UIColor.blackColor()
         initialsLabel.textAlignment = NSTextAlignment.Center
         photoImageView.addSubview(initialsLabel)
-        friendCardView.addSubview(photoImageView)
+        backgroundClipView.addSubview(photoImageView)
+        friendCardView.addSubview(backgroundColorView)
+        friendCardView.sendSubviewToBack(backgroundColorView)
+        friendCardView.addSubview(backgroundClipView)
         
-        nameLabel.frame = CGRect(x: 74, y: 3, width: 221, height: 27)
+        nameLabel.frame = CGRect(x: 74, y: 6.5, width: 221, height: 24)
         nameLabel.font = UIFont(name: "AvenirNext-Regular", size: 17)!
         nameLabel.textColor = UIColor.whiteColor()
         friendCardView.addSubview(nameLabel)
         
-        scrollview = UIScrollView(frame: CGRectMake(74, 28, friendCardView.bounds.width - 74, 36))
+        scrollview = UIScrollView(frame: CGRectMake(74, 32, friendCardView.frame.width - 74, 36))
         containerChildren = friendCardView.bounds.width
         scrollview.contentSize = CGSizeMake(containerChildren, scrollview.frame.height) // will be 2 times as wide as the cell
         scrollview.clipsToBounds = true
@@ -169,28 +176,50 @@ class FriendTableViewCell: UITableViewCell, UIScrollViewDelegate {
         emailBtn.hidden = true
         containerView.addSubview(emailBtn)
         
-        sourceTag.frame = CGRect(x: 0, y: 0, width: 2, height: friendCardView.frame.height)
-        sourceTag.backgroundColor = UIColor(red: 33/255, green: 192/255, blue: 100/255, alpha: 1.0)
-        friendCardView.addSubview(sourceTag)
-        
         self.contentView.addSubview(friendCardView)
     }
     
-    func configureSecondaryBtns() {
-        secondaryEmailBtn.frame = CGRect(x: connectBtnX, y: 0, width: 36, height: 36)
-        secondaryEmailBtn.setImage(emailBtnImage, forState: UIControlState.Normal)
-        secondaryEmailBtn.layer.cornerRadius = secondaryEmailBtn.frame.width / 2.0
-        secondaryEmailBtn.contentMode = UIViewContentMode.ScaleAspectFit
-        secondaryEmailBtn.setTitleColor(UIColor.clearColor(), forState: UIControlState.Normal)
-        secondaryEmailBtn.addTarget(self, action: "didPressButton:", forControlEvents: .TouchUpInside)
-        secondaryEmailBtn.tag = 99
-        secondaryEmailBtn.hidden = true
-        containerView.addSubview(secondaryEmailBtn)
+    func emailActionSheet(emailUser: String) {
+        let hokusai = Hokusai()
+        var hkPerson = try! Realm().objectForPrimaryKey(HKPerson.self, key: emailUser)
+        var emailsToSelect = hkPerson!.emails
+        
+        for email in emailsToSelect {
+            // Add a button with a closure
+            hokusai.addButton("\(email.email)") {
+                self.emailPressed(email.email)
+            }
+        }
+        
+        // Add a button with a selector
+        //hokusai.addButton("\(emailToSelect)", target: self, selector: Selector("button2Pressed"))
+        
+        // Set a font name. AvenirNext-DemiBold is the default. (Optional)
+        hokusai.fontName = "HelveticaNeue-Light"
+        
+        // Select a color scheme. Just below you can see the dafault sets of schemes. (Optional)
+        hokusai.colorScheme = HOKColorScheme.Karasu
+        
+        // Show Hokusai
+        hokusai.show()
+        
+        // Selector for button 2
+        func button2Pressed() {
+            print("Oribe")
+        }
+        
+        // Change a title for cancel button. Default is Cancel. (Optional)
+        hokusai.cancelButtonTitle = "Done"
+        
+        // Add a callback for cancel button (Optional)
+        hokusai.cancelButtonAction = {
+            print("canceled")
+        }
     }
     
     func didPressButton(sender: UIButton!) {
         var infoToSend: String!
-        recentPeople.append(person)
+        backgroundAddRecent(person)
         if (sender.tag == 95) {
             infoToSend = sender.titleLabel!.text!
             if (infoToSend != nil) {
@@ -206,7 +235,7 @@ class FriendTableViewCell: UITableViewCell, UIScrollViewDelegate {
         if (sender.tag == 99) {
             infoToSend = sender.titleLabel!.text!
             if (infoToSend != nil) {
-                emailPressed(infoToSend)
+                emailActionSheet(infoToSend)
             }
         }
     }
@@ -217,155 +246,122 @@ class FriendTableViewCell: UITableViewCell, UIScrollViewDelegate {
     var otherIncluded: Bool! = false
     var iPhoneIncluded: Bool! = false
     
-    internal func phoneCell(number: String) {
-        let rangeOfLabel = number.rangeOfString(":")
-        if let labelIndex = number.indexOfCharacter(":") {
-            let index: String.Index = advance(number.startIndex, labelIndex)
-            let label: String = number.substringToIndex(index)
-            let phoneNumber: String = number.substringFromIndex(labelIndex + 1)
+    internal func phoneCell(number: String, label: String) {
             switch label {
-            case "home":
-                if mobileIncluded == true && iPhoneIncluded == false {
-                    mobileCallBtn.transform = CGAffineTransformMakeTranslation(60, 0)
-                    mobileTxtBtn.transform = CGAffineTransformMakeTranslation(120, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(180, 0)
-                }
-                if mobileIncluded == true && iPhoneIncluded == true {
-                    iPhoneCallBtn.transform = CGAffineTransformMakeTranslation(60, 0)
-                    iPhoneTxtBtn.transform = CGAffineTransformMakeTranslation(120, 0)
-                    mobileCallBtn.transform = CGAffineTransformMakeTranslation(180, 0)
-                    mobileTxtBtn.transform = CGAffineTransformMakeTranslation(240, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(300, 0)
-                    
-                }
+            case "Home":
                 homeIncluded = true
-                homeCallBtn.setTitle(phoneNumber, forState: UIControlState.Normal)
+                homeCallBtn.setTitle(number, forState: UIControlState.Normal)
                 homeCallBtn.hidden = false
-                emailBtn.transform = CGAffineTransformMakeTranslation(60, 0)
-            case "work":
-                if homeIncluded == true {
-                    workCallBtn.transform = CGAffineTransformMakeTranslation(60, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(120, 0)
-                }
-                if mobileIncluded == true && iPhoneIncluded == false {
-                    mobileCallBtn.transform = CGAffineTransformMakeTranslation(60, 0)
-                    mobileTxtBtn.transform = CGAffineTransformMakeTranslation(120, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(180, 0)
-                }
-                if mobileIncluded == true && iPhoneIncluded == true {
-                    iPhoneCallBtn.transform = CGAffineTransformMakeTranslation(60, 0)
-                    iPhoneTxtBtn.transform = CGAffineTransformMakeTranslation(120, 0)
-                    mobileCallBtn.transform = CGAffineTransformMakeTranslation(180, 0)
-                    mobileTxtBtn.transform = CGAffineTransformMakeTranslation(240, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(300, 0)
-                }
+            case "Work":
+                //if homeIncluded == false && mobileIncluded == false && iPhoneIncluded == false {
+                    //emailBtn.transform = CGAffineTransformMakeTranslation(60, 0)
+                //}
                 workIncluded = true
-                workCallBtn.setTitle(phoneNumber, forState: UIControlState.Normal)
+                workCallBtn.setTitle(number, forState: UIControlState.Normal)
                 workCallBtn.hidden = false
-                emailBtn.transform = CGAffineTransformMakeTranslation(60, 0)
             case "iPhone":
-                if homeIncluded == false && workIncluded == false && otherIncluded == false {
-                    iPhoneTxtBtn.transform = CGAffineTransformMakeTranslation(60, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(120, 0)
-                }
-                if homeIncluded == true && workIncluded == false && otherIncluded == false {
-                    iPhoneCallBtn.transform = CGAffineTransformMakeTranslation(60, 0)
-                    iPhoneTxtBtn.transform = CGAffineTransformMakeTranslation(120, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(180, 0)
-                }
-                if homeIncluded == false && workIncluded == true && otherIncluded == false {
-                    iPhoneCallBtn.transform = CGAffineTransformMakeTranslation(60, 0)
-                    iPhoneTxtBtn.transform = CGAffineTransformMakeTranslation(120, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(180, 0)
-                }
-                if homeIncluded == false && workIncluded == false && otherIncluded == true {
-                    iPhoneCallBtn.transform = CGAffineTransformMakeTranslation(60, 0)
-                    iPhoneTxtBtn.transform = CGAffineTransformMakeTranslation(120, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(180, 0)
-                }
-                if homeIncluded == true && workIncluded == false && otherIncluded == true {
-                    iPhoneCallBtn.transform = CGAffineTransformMakeTranslation(120, 0)
-                    iPhoneTxtBtn.transform = CGAffineTransformMakeTranslation(180, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(240, 0)
-                }
-                if homeIncluded == false && workIncluded == true && otherIncluded == true {
-                    iPhoneCallBtn.transform = CGAffineTransformMakeTranslation(120, 0)
-                    iPhoneTxtBtn.transform = CGAffineTransformMakeTranslation(180, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(240, 0)
-                }
-                if homeIncluded == true && workIncluded == true && otherIncluded == false {
-                    iPhoneCallBtn.transform = CGAffineTransformMakeTranslation(120, 0)
-                    iPhoneTxtBtn.transform = CGAffineTransformMakeTranslation(180, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(240, 0)
-                }
-                if homeIncluded == true && workIncluded == true && otherIncluded == true {
-                    iPhoneCallBtn.transform = CGAffineTransformMakeTranslation(180, 0)
-                    iPhoneTxtBtn.transform = CGAffineTransformMakeTranslation(240, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(300, 0)
-                }
                 iPhoneIncluded = true
-                iPhoneCallBtn.setTitle(phoneNumber, forState: UIControlState.Normal)
+                iPhoneCallBtn.setTitle(number, forState: UIControlState.Normal)
                 iPhoneCallBtn.hidden = false
-                iPhoneTxtBtn.setTitle(phoneNumber, forState: UIControlState.Normal)
+                iPhoneTxtBtn.setTitle(number, forState: UIControlState.Normal)
                 iPhoneTxtBtn.hidden = false
-            case "mobile":
-                if homeIncluded == false && workIncluded == false && otherIncluded == false && iPhoneIncluded == false {
-                    mobileTxtBtn.transform = CGAffineTransformMakeTranslation(60, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(120, 0)
-                }
-                if homeIncluded == true && workIncluded == false && otherIncluded == false && iPhoneIncluded == false {
-                    mobileCallBtn.transform = CGAffineTransformMakeTranslation(60, 0)
-                    mobileTxtBtn.transform = CGAffineTransformMakeTranslation(120, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(180, 0)
-                }
-                if homeIncluded == false && workIncluded == true && otherIncluded == false && iPhoneIncluded == false {
-                    mobileCallBtn.transform = CGAffineTransformMakeTranslation(60, 0)
-                    mobileTxtBtn.transform = CGAffineTransformMakeTranslation(120, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(180, 0)
-                }
-                if homeIncluded == false && workIncluded == false && otherIncluded == true && iPhoneIncluded == true {
-                    mobileCallBtn.transform = CGAffineTransformMakeTranslation(180, 0)
-                    mobileTxtBtn.transform = CGAffineTransformMakeTranslation(240, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(300, 0)
-                }
-                if homeIncluded == true && workIncluded == false && otherIncluded == true && iPhoneIncluded == false {
-                    mobileCallBtn.transform = CGAffineTransformMakeTranslation(120, 0)
-                    mobileTxtBtn.transform = CGAffineTransformMakeTranslation(180, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(240, 0)
-                }
-                if homeIncluded == false && workIncluded == true && otherIncluded == false && iPhoneIncluded == true {
-                    mobileCallBtn.transform = CGAffineTransformMakeTranslation(180, 0)
-                    mobileTxtBtn.transform = CGAffineTransformMakeTranslation(240, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(300, 0)
-                }
-                if homeIncluded == false && workIncluded == true && otherIncluded == true && iPhoneIncluded == true {
-                    mobileCallBtn.transform = CGAffineTransformMakeTranslation(240, 0)
-                    mobileTxtBtn.transform = CGAffineTransformMakeTranslation(300, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(360, 0)
-                }
-                if homeIncluded == true && workIncluded == true && otherIncluded == false && iPhoneIncluded == false {
-                    mobileCallBtn.transform = CGAffineTransformMakeTranslation(120, 0)
-                    mobileTxtBtn.transform = CGAffineTransformMakeTranslation(180, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(240, 0)
-                }
-                if homeIncluded == true && workIncluded == true && otherIncluded == true && iPhoneIncluded == false {
-                    mobileCallBtn.transform = CGAffineTransformMakeTranslation(180, 0)
-                    mobileTxtBtn.transform = CGAffineTransformMakeTranslation(240, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(300, 0)
-                }
-                if homeIncluded == true && workIncluded == true && otherIncluded == true && iPhoneIncluded == true {
-                    mobileCallBtn.transform = CGAffineTransformMakeTranslation(240, 0)
-                    mobileTxtBtn.transform = CGAffineTransformMakeTranslation(300, 0)
-                    emailBtn.transform = CGAffineTransformMakeTranslation(360, 0)
-                }
+            case "Mobile":
                 mobileIncluded = true
-                mobileCallBtn.setTitle(phoneNumber, forState: UIControlState.Normal)
+                mobileCallBtn.setTitle(number, forState: UIControlState.Normal)
                 mobileCallBtn.hidden = false
-                mobileTxtBtn.setTitle(phoneNumber, forState: UIControlState.Normal)
+                mobileTxtBtn.setTitle(number, forState: UIControlState.Normal)
                 mobileTxtBtn.hidden = false
             default:
                 break
             }
+            self.dynamicActionButtons()
+    }
+    
+    func dynamicActionButtons() {
+        if homeIncluded == true && workIncluded == false && mobileIncluded == false && iPhoneIncluded == false {
+            emailBtn.transform = CGAffineTransformMakeTranslation(60, 0)
+        }
+        if homeIncluded == false && workIncluded == true && mobileIncluded == false && iPhoneIncluded == false {
+            emailBtn.transform = CGAffineTransformMakeTranslation(60, 0)
+        }
+        if homeIncluded == false && workIncluded == false && mobileIncluded == true && iPhoneIncluded == true {
+            iPhoneCallBtn.transform = CGAffineTransformMakeTranslation(120, 0)
+            iPhoneTxtBtn.transform = CGAffineTransformMakeTranslation(180, 0)
+            emailBtn.transform = CGAffineTransformMakeTranslation(240, 0)
+            scrollview.showsHorizontalScrollIndicator = true
+            scrollview.scrollEnabled = true
+        }
+        if homeIncluded == false && workIncluded == false && mobileIncluded == true && iPhoneIncluded == false {
+            mobileTxtBtn.transform = CGAffineTransformMakeTranslation(60, 0)
+            emailBtn.transform = CGAffineTransformMakeTranslation(120, 0)
+        }
+        if homeIncluded == false && workIncluded == false && mobileIncluded == false && iPhoneIncluded == true {
+            iPhoneTxtBtn.transform = CGAffineTransformMakeTranslation(60, 0)
+            emailBtn.transform = CGAffineTransformMakeTranslation(120, 0)
+        }
+        if homeIncluded == true && workIncluded == false && mobileIncluded == true && iPhoneIncluded == false {
+            mobileCallBtn.transform = CGAffineTransformMakeTranslation(60, 0)
+            mobileTxtBtn.transform = CGAffineTransformMakeTranslation(120, 0)
+            emailBtn.transform = CGAffineTransformMakeTranslation(180, 0)
+        }
+        if homeIncluded == false && workIncluded == true && mobileIncluded == false && iPhoneIncluded == true {
+            iPhoneCallBtn.transform = CGAffineTransformMakeTranslation(60, 0)
+            iPhoneTxtBtn.transform = CGAffineTransformMakeTranslation(120, 0)
+            emailBtn.transform = CGAffineTransformMakeTranslation(180, 0)
+        }
+        if homeIncluded == false && workIncluded == true && mobileIncluded == true && iPhoneIncluded == false {
+            mobileCallBtn.transform = CGAffineTransformMakeTranslation(60, 0)
+            mobileTxtBtn.transform = CGAffineTransformMakeTranslation(120, 0)
+            emailBtn.transform = CGAffineTransformMakeTranslation(180, 0)
+        }
+        if homeIncluded == false && workIncluded == true && mobileIncluded == true && iPhoneIncluded == true {
+            mobileCallBtn.transform = CGAffineTransformMakeTranslation(60, 0)
+            mobileTxtBtn.transform = CGAffineTransformMakeTranslation(120, 0)
+            iPhoneCallBtn.transform = CGAffineTransformMakeTranslation(180, 0)
+            iPhoneTxtBtn.transform = CGAffineTransformMakeTranslation(240, 0)
+            emailBtn.transform = CGAffineTransformMakeTranslation(300, 0)
+            scrollview.showsHorizontalScrollIndicator = true
+            scrollview.scrollEnabled = true
+        }
+        if homeIncluded == true && workIncluded == false && mobileIncluded == true && iPhoneIncluded == true {
+            mobileCallBtn.transform = CGAffineTransformMakeTranslation(60, 0)
+            mobileTxtBtn.transform = CGAffineTransformMakeTranslation(120, 0)
+            iPhoneCallBtn.transform = CGAffineTransformMakeTranslation(180, 0)
+            iPhoneTxtBtn.transform = CGAffineTransformMakeTranslation(240, 0)
+            emailBtn.transform = CGAffineTransformMakeTranslation(300, 0)
+            scrollview.showsHorizontalScrollIndicator = true
+            scrollview.scrollEnabled = true
+        }
+        if homeIncluded == true && workIncluded == true && mobileIncluded == false && iPhoneIncluded == false {
+            workCallBtn.transform = CGAffineTransformMakeTranslation(60, 0)
+            emailBtn.transform = CGAffineTransformMakeTranslation(120, 0)
+        }
+        if homeIncluded == true && workIncluded == true && mobileIncluded == true && iPhoneIncluded == false {
+            workCallBtn.transform = CGAffineTransformMakeTranslation(60, 0)
+            mobileCallBtn.transform = CGAffineTransformMakeTranslation(120, 0)
+            mobileTxtBtn.transform = CGAffineTransformMakeTranslation(180, 0)
+            emailBtn.transform = CGAffineTransformMakeTranslation(240, 0)
+            scrollview.showsHorizontalScrollIndicator = true
+            scrollview.scrollEnabled = true
+        }
+        if homeIncluded == true && workIncluded == true && mobileIncluded == false && iPhoneIncluded == true {
+            workCallBtn.transform = CGAffineTransformMakeTranslation(60, 0)
+            iPhoneCallBtn.transform = CGAffineTransformMakeTranslation(120, 0)
+            iPhoneTxtBtn.transform = CGAffineTransformMakeTranslation(180, 0)
+            emailBtn.transform = CGAffineTransformMakeTranslation(240, 0)
+            scrollview.showsHorizontalScrollIndicator = true
+            scrollview.scrollEnabled = true
+        }
+        if homeIncluded == true && workIncluded == true && mobileIncluded == true && iPhoneIncluded == true {
+            workCallBtn.transform = CGAffineTransformMakeTranslation(60, 0)
+            mobileCallBtn.transform = CGAffineTransformMakeTranslation(120, 0)
+            mobileTxtBtn.transform = CGAffineTransformMakeTranslation(180, 0)
+            iPhoneCallBtn.transform = CGAffineTransformMakeTranslation(240, 0)
+            iPhoneTxtBtn.transform = CGAffineTransformMakeTranslation(300, 0)
+            emailBtn.transform = CGAffineTransformMakeTranslation(360, 0)
+            containerChildren = friendCardView.bounds.width + 60
+            scrollview.showsHorizontalScrollIndicator = true
+            scrollview.scrollEnabled = true
         }
     }
     
@@ -404,26 +400,50 @@ class FriendTableViewCell: UITableViewCell, UIScrollViewDelegate {
         iPhoneIncluded = false
     }
     
-    internal func emailCell(email: String, emailCount: Int) {
+    internal func emailCell(person: HKPerson, emailCount: Int) {
         if emailCount != 0 {
-            var otherTranslate: CGFloat
-                if emailCount == 1 {
-                    emailBtn.hidden = false
-                    emailBtn.setTitle(email, forState: UIControlState.Normal)
-                } else if emailCount > 1 {
-                    otherTranslate = 60 * CGFloat(emailCount)
-                    emailBtn.hidden = false
-                    emailBtn.setTitle(email, forState: UIControlState.Normal)
-                }
+            emailBtn.hidden = false
+            let emailUser = person.uuid
+            emailBtn.setTitle(emailUser, forState: UIControlState.Normal)
+        } else {
+            emailBtn.hidden = true
+            
+            if homeIncluded == false && workIncluded == false && mobileIncluded == true && iPhoneIncluded == true {
+                scrollview.showsHorizontalScrollIndicator = false
+                scrollview.scrollEnabled = false
+            } else if homeIncluded == true && workIncluded == true && mobileIncluded == true && iPhoneIncluded == false {
+                scrollview.showsHorizontalScrollIndicator = false
+                scrollview.scrollEnabled = false
+            } else if homeIncluded == true && workIncluded == true && mobileIncluded == false && iPhoneIncluded == true {
+                scrollview.showsHorizontalScrollIndicator = false
+                scrollview.scrollEnabled = false
+            } else {
+                return
             }
+        }
     }
     
     private func callNumber(sender: AnyObject!) {
-        var phoneNumber: String! = sender as? String
-        var strippedPhoneNumber = phoneNumber.stringByReplacingOccurrencesOfString("[^0-9 ]", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range:nil);
+        do {
+            let realm = try Realm()
+            let firstIndex = person.firstName.startIndex.advancedBy(1)
+            let fChar = person.firstName.substringToIndex(firstIndex)
+            let fNameCount = realm.objects(HKPerson).filter("firstName BEGINSWITH[c] '\(fChar)'")
+            let lNameCount = realm.objects(HKPerson).filter("lastName BEGINSWITH[c] '\(fChar)'")
+            let sectionCount = fNameCount.count + lNameCount.count
+            let usageWeight: Double = Double(0.75) * (Double(sectionCount - person.indexedOrder) / Double(sectionCount))
+            realm.beginWrite()
+            person.flUsageWeight = usageWeight + Double(person.indexedOrder)
+            try realm.commitWrite()
+            print("added \(person.fullName) to recents")
+        } catch {
+            print("Something went wrong!")
+        }
+        let phoneNumber: String! = sender as? String
+        let strippedPhoneNumber = phoneNumber.stringByReplacingOccurrencesOfString("[^0-9 ]", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range:nil);
         var cleanNumber = strippedPhoneNumber.removeWhitespace()
-        cleanNumber.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
-        if (count(cleanNumber.utf16) > 1){
+        cleanNumber = cleanNumber.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
+        if (cleanNumber.utf16.count > 1){
             if let phoneCallURL:NSURL = NSURL(string: "tel://\(cleanNumber)") {
                 let application:UIApplication = UIApplication.sharedApplication()
                 if (application.canOpenURL(phoneCallURL)) {
@@ -431,19 +451,21 @@ class FriendTableViewCell: UITableViewCell, UIScrollViewDelegate {
                 }
             }
         } else {
-            let alert = UIAlertView()
+            let alert = UIAlertController()
             alert.title = "Sorry!"
             alert.message = "Phone number is not available."
-            alert.addButtonWithTitle("Ok")
-            alert.show()
+            let okAction = UIAlertAction(title:  NSLocalizedString("Ok", comment: ""), style: .Default) { (action) in
+            }
+            alert.addAction(okAction)
+            window!.rootViewController!.presentViewController(alert, animated: true, completion: nil)
         }
     }
     
     private func textNumber(phoneNumber:String) {
-        var strippedPhoneNumber = phoneNumber.stringByReplacingOccurrencesOfString("[^0-9 ]", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range:nil);
+        let strippedPhoneNumber = phoneNumber.stringByReplacingOccurrencesOfString("[^0-9 ]", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range:nil);
         var cleanNumber = strippedPhoneNumber.removeWhitespace()
-        cleanNumber.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
-        if (count(cleanNumber.utf16) > 1){
+        cleanNumber = cleanNumber.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
+        if (cleanNumber.utf16.count > 1){
             if let textMessageURL:NSURL = NSURL(string: "sms://\(cleanNumber)") {
                 let application:UIApplication = UIApplication.sharedApplication()
                 if (application.canOpenURL(textMessageURL)) {
@@ -451,11 +473,13 @@ class FriendTableViewCell: UITableViewCell, UIScrollViewDelegate {
                 }
             }
         } else {
-            let alert = UIAlertView()
+            let alert = UIAlertController()
             alert.title = "Sorry!"
-            alert.message = "Phone number is not available for text messaging."
-            alert.addButtonWithTitle("Ok")
-            alert.show()
+            alert.message = "Phone number is not available."
+            let okAction = UIAlertAction(title:  NSLocalizedString("Ok", comment: ""), style: .Default) { (action) in
+            }
+            alert.addAction(okAction)
+            window!.rootViewController!.presentViewController(alert, animated: true, completion: nil)
         }
     }
     

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ##################################################################################
-# Custom build tool for Realm Objective C binding.
+# Custom build tool for Realm Objective-C binding.
 #
 # (C) Copyright 2011-2015 by realm.io.
 ##################################################################################
@@ -14,7 +14,7 @@ set -o pipefail
 set -e
 
 # You can override the version of the core library
-: ${REALM_CORE_VERSION:=0.92.0} # set to "current" to always use the current build
+: ${REALM_CORE_VERSION:=0.92.4} # set to "current" to always use the current build
 
 # You can override the xcmode used
 : ${XCMODE:=xcodebuild} # must be one of: xcodebuild (default), xcpretty, xctool
@@ -35,6 +35,7 @@ Usage: sh $0 command [argument]
 command:
   clean:                clean up/remove all generated files
   download-core:        downloads core library (binary version)
+  set-core-bitcode-symlink: set core symlink to bitcode version for Xcode 7+ or non-bitcode version otherwise
   build:                builds all iOS  and OS X frameworks
   ios-static:           builds fat iOS static framework
   ios-dynamic:          builds iOS dynamic frameworks
@@ -69,6 +70,7 @@ environment variables:
   XCMODE: xcodebuild (default), xcpretty or xctool
   CONFIGURATION: Debug or Release (default)
   REALM_CORE_VERSION: version in x.y.z format or "current" to use local build
+  REALM_EXTRA_BUILD_ARGUMENTS: additional arguments to pass to the build tool
 EOF
 }
 
@@ -78,7 +80,7 @@ EOF
 
 xcode() {
     mkdir -p build/DerivedData
-    CMD="xcodebuild -IDECustomDerivedDataLocation=build/DerivedData $@"
+    CMD="xcodebuild -IDECustomDerivedDataLocation=build/DerivedData $@ $REALM_EXTRA_BUILD_ARGUMENTS"
     echo "Building with command:" $CMD
     eval "$CMD"
 }
@@ -176,6 +178,20 @@ clean_retrieve() {
   cp -R "$1" "$2"
 }
 
+move_to_clean_dir() {
+    rm -rf "$2"
+    mkdir -p "$2"
+    mv "$1" "$2"
+}
+
+shutdown_simulators() {
+    # Shut down simulators until there's no booted ones left
+    # Only do one at a time because devices sometimes show up multiple times
+    while xcrun simctl list | grep -q Booted; do
+      xcrun simctl list | grep Booted | sed 's/.* (\(.*\)) (Booted)/\1/' | head -n 1 | xargs xcrun simctl shutdown
+    done
+}
+
 ######################################
 # Device Test Helper
 ######################################
@@ -227,7 +243,7 @@ download_core() {
     CORE_TMP_TAR="${TMP_DIR}/core-${REALM_CORE_VERSION}.tar.bz2.tmp"
     CORE_TAR="${TMP_DIR}/core-${REALM_CORE_VERSION}.tar.bz2"
     if [ ! -f "${CORE_TAR}" ]; then
-        curl -f -L -s "http://static.realm.io/downloads/core/realm-core-${REALM_CORE_VERSION}.tar.bz2" -o "${CORE_TMP_TAR}" ||
+        curl -f -L -s "https://static.realm.io/downloads/core/realm-core-${REALM_CORE_VERSION}.tar.bz2" -o "${CORE_TMP_TAR}" ||
           (echo "Downloading core failed. Please try again once you have an Internet connection." && exit 1)
         mv "${CORE_TMP_TAR}" "${CORE_TAR}"
     fi
@@ -269,7 +285,7 @@ case "$COMMAND" in
         ;;
 
     ######################################
-    # Download Core Library
+    # Core
     ######################################
     "download-core")
         if [ "$REALM_CORE_VERSION" = "current" ]; then
@@ -289,12 +305,29 @@ case "$COMMAND" in
             echo "core is not a symlink. Deleting..."
             rm -rf core
             download_core
-        elif ! $(head -n 1 core/release_notes.txt | grep -i ${REALM_CORE_VERSION} >/dev/null); then
+        # With a prebuilt version we only want to check the first non-empty
+        # line so that checking out an older commit will download the
+        # appropriate version of core if the already-present version is too new
+        elif ! $(grep -m 1 . core/release_notes.txt | grep -i "${REALM_CORE_VERSION} RELEASE NOTES" >/dev/null); then
             download_core
         else
             echo "The core library seems to be up to date."
         fi
         exit 0
+        ;;
+
+    "set-core-bitcode-symlink")
+        cd core
+        rm -f librealm-ios.a librealm-ios-dbg.a
+        if [ $REALM_SWIFT_VERSION = '1.2' ]; then
+            echo "Using core without bitcode"
+            ln -s librealm-ios-no-bitcode.a librealm-ios.a
+            ln -s librealm-ios-no-bitcode-dbg.a librealm-ios-dbg.a
+        else
+            echo "Using core with bitcode"
+            ln -s librealm-ios-bitcode.a librealm-ios.a
+            ln -s librealm-ios-bitcode-dbg.a librealm-ios-dbg.a
+        fi
         ;;
 
     ######################################
@@ -303,11 +336,7 @@ case "$COMMAND" in
     "set-swift-version")
         version="$2"
         if [[ -z "$version" ]]; then
-            if [[ $REALM_SWIFT_VERSION ]]; then
-                version="$REALM_SWIFT_VERSION"
-            else
-                version="$(get_swift_version)"
-            fi
+            version="$REALM_SWIFT_VERSION"
         fi
 
         # Update the symlinks to point to the correct verion of the source, and
@@ -325,29 +354,7 @@ case "$COMMAND" in
         ;;
 
     "prelaunch-simulator")
-        killall "iOS Simulator" 2>/dev/null || true
-        killall Simulator 2>/dev/null || true
-        pkill CoreSimulator 2>/dev/null || true
-        # Erase all available simulators
-        (
-            IFS=$'\n' # make newlines the only separator
-            for LINE in $(xcrun simctl list); do
-                if [[ $LINE =~ unavailable ]]; then
-                    # skip unavailable simulators
-                    continue
-                fi
-                if [[ $LINE =~ ([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}) ]]; then
-                    xcrun simctl erase "${BASH_REMATCH[1]}" 2>/dev/null || true
-                fi
-            done
-        )
-        sleep 5
-        if [[ -a "${DEVELOPER_DIR}/Applications/iOS Simulator.app" ]]; then
-            open "${DEVELOPER_DIR}/Applications/iOS Simulator.app"
-        elif [[ -a "${DEVELOPER_DIR}/Applications/Simulator.app" ]]; then
-            open "${DEVELOPER_DIR}/Applications/Simulator.app"
-        fi
-        sleep 5
+        sh $(dirname $0)/scripts/reset-simulators.sh
         ;;
 
     ######################################
@@ -401,8 +408,8 @@ case "$COMMAND" in
     "osx-swift")
         xcrealmswift "-scheme 'RealmSwift' -configuration $CONFIGURATION build"
         destination="build/osx/swift-$REALM_SWIFT_VERSION"
-        mkdir -p "$destination"
-        cp -R build/DerivedData/RealmSwift/Build/Products/$CONFIGURATION/RealmSwift.framework "$destination"
+        clean_retrieve "build/DerivedData/RealmSwift/Build/Products/$CONFIGURATION/RealmSwift.framework" "$destination" "RealmSwift.framework"
+        cp -R build/osx/Realm.framework "$destination"
         exit 0
         ;;
 
@@ -431,25 +438,29 @@ case "$COMMAND" in
 
     "test-ios-static")
         xcrealm "-scheme iOS -configuration $CONFIGURATION -sdk iphonesimulator -destination 'name=iPhone 6' test"
-        xcrealm "-scheme iOS -configuration $CONFIGURATION -sdk iphonesimulator -destination 'name=iPhone 4S' test"
+        shutdown_simulators
+        xcrealm "-scheme iOS -configuration $CONFIGURATION -sdk iphonesimulator -destination 'name=iPhone 4s' test"
         exit 0
         ;;
 
     "test-ios7-static")
         xcrealm "-scheme iOS -configuration $CONFIGURATION -sdk iphonesimulator -destination 'name=iPhone 5S,OS=7.1' test"
-        xcrealm "-scheme iOS -configuration $CONFIGURATION -sdk iphonesimulator -destination 'name=iPhone 4S,OS=7.1' test"
+        shutdown_simulators
+        xcrealm "-scheme iOS -configuration $CONFIGURATION -sdk iphonesimulator -destination 'name=iPhone 4s,OS=7.1' test"
         exit 0
         ;;
 
     "test-ios-dynamic")
         xcrealm "-scheme 'iOS Dynamic' -configuration $CONFIGURATION -sdk iphonesimulator -destination 'name=iPhone 6' test"
-        xcrealm "-scheme 'iOS Dynamic' -configuration $CONFIGURATION -sdk iphonesimulator -destination 'name=iPhone 4S' test"
+        shutdown_simulators
+        xcrealm "-scheme 'iOS Dynamic' -configuration $CONFIGURATION -sdk iphonesimulator -destination 'name=iPhone 4s' test"
         exit 0
         ;;
 
     "test-ios-swift")
         xcrealmswift "-scheme RealmSwift -configuration $CONFIGURATION -sdk iphonesimulator -destination 'name=iPhone 6' test"
-        xcrealmswift "-scheme RealmSwift -configuration $CONFIGURATION -sdk iphonesimulator -destination 'name=iPhone 4S' test"
+        shutdown_simulators
+        xcrealmswift "-scheme RealmSwift -configuration $CONFIGURATION -sdk iphonesimulator -destination 'name=iPhone 4s' test"
         exit 0
         ;;
 
@@ -492,6 +503,7 @@ case "$COMMAND" in
         sh build.sh verify-ios-swift
         sh build.sh verify-ios-swift-debug
         sh build.sh verify-ios-device
+        sh build.sh verify-watchos
         ;;
 
     "verify-osx")
@@ -543,9 +555,10 @@ case "$COMMAND" in
         exit 0
         ;;
 
-
-    # FIXME: remove these targets from ci
-    "verify-ios")
+    "verify-watchos")
+        if [ $REALM_SWIFT_VERSION != '1.2' ]; then
+            sh build.sh watchos-swift
+        fi
         exit 0
         ;;
 
@@ -569,15 +582,23 @@ case "$COMMAND" in
         ;;
 
     "examples-ios")
-        xc "-project examples/ios/objc/RealmExamples.xcodeproj -scheme Simple -configuration $CONFIGURATION build ${CODESIGN_PARAMS}"
-        xc "-project examples/ios/objc/RealmExamples.xcodeproj -scheme TableView -configuration $CONFIGURATION build ${CODESIGN_PARAMS}"
-        xc "-project examples/ios/objc/RealmExamples.xcodeproj -scheme Migration -configuration $CONFIGURATION build ${CODESIGN_PARAMS}"
-        xc "-project examples/ios/objc/RealmExamples.xcodeproj -scheme Backlink -configuration $CONFIGURATION build ${CODESIGN_PARAMS}"
-        xc "-project examples/ios/objc/RealmExamples.xcodeproj -scheme GroupedTableView -configuration $CONFIGURATION build ${CODESIGN_PARAMS}"
-        xc "-project examples/ios/objc/RealmExamples.xcodeproj -scheme Encryption -configuration $CONFIGURATION build ${CODESIGN_PARAMS}"
+        if [[ -d "examples/ios/objc" ]]; then
+            project="examples/ios/objc/RealmExamples.xcodeproj"
+        elif [[ "$REALM_SWIFT_VERSION" = 1.2 ]]; then
+            project="examples/ios/xcode-6/objc/RealmExamples.xcodeproj"
+        else
+            project="examples/ios/xcode-7/objc/RealmExamples.xcodeproj"
+        fi
+
+        xc "-project $project -scheme Simple -configuration $CONFIGURATION build ${CODESIGN_PARAMS}"
+        xc "-project $project -scheme TableView -configuration $CONFIGURATION build ${CODESIGN_PARAMS}"
+        xc "-project $project -scheme Migration -configuration $CONFIGURATION build ${CODESIGN_PARAMS}"
+        xc "-project $project -scheme Backlink -configuration $CONFIGURATION build ${CODESIGN_PARAMS}"
+        xc "-project $project -scheme GroupedTableView -configuration $CONFIGURATION build ${CODESIGN_PARAMS}"
+        xc "-project $project -scheme Encryption -configuration $CONFIGURATION build ${CODESIGN_PARAMS}"
 
         if [ ! -z "${JENKINS_HOME}" ]; then
-            xc "-project examples/ios/objc/RealmExamples.xcodeproj -scheme Extension -configuration $CONFIGURATION build ${CODESIGN_PARAMS}"
+            xc "-project $project -scheme Extension -configuration $CONFIGURATION build ${CODESIGN_PARAMS}"
         fi
 
         exit 0
@@ -628,14 +649,22 @@ case "$COMMAND" in
     "cocoapods-setup")
         if [[ "$2" != "without-core" ]]; then
             sh build.sh download-core
+            mv core/librealm.a core/librealm-osx.a
+            if [[ "$REALM_SWIFT_VERSION" = "1.2" ]]; then
+                echo 'Installing for Xcode 6.'
+                mv core/librealm-ios-no-bitcode.a core/librealm-ios.a
+              else
+                echo 'Installing for Xcode 7+.'
+                mv core/librealm-ios-bitcode.a core/librealm-ios.a
+            fi
         fi
 
         # CocoaPods won't automatically preserve files referenced via symlinks
         for symlink in $(find . -not -path "./.git/*" -type l); do
           if [[ -L "$symlink" ]]; then
             link="$(dirname "$symlink")/$(readlink "$symlink")"
-            rm -rf "$symlink"
-            mv "$link" "$symlink"
+            rm "$symlink"
+            cp -R "$link" "$symlink"
           fi
         done
 
@@ -668,7 +697,8 @@ case "$COMMAND" in
         cp $0 realm-objc-${VERSION}
         cp -r $(dirname $0)/scripts realm-objc-${VERSION}
         cd realm-objc-${VERSION}
-        sh build.sh examples-ios
+        REALM_SWIFT_VERSION=1.2 sh build.sh examples-ios
+        REALM_SWIFT_VERSION=2.0 sh build.sh examples-ios
         sh build.sh examples-osx
         cd ..
         rm -rf realm-objc-${VERSION}
@@ -686,19 +716,33 @@ case "$COMMAND" in
 
     "package-ios-static")
         cd tightdb_objc
-        sh build.sh test-ios-static
-        sh build.sh ios-static
 
-        cd build/ios
-        zip --symlinks -r realm-framework-ios.zip Realm.framework
+        REALM_SWIFT_VERSION=1.2 sh build.sh prelaunch-simulator
+        REALM_SWIFT_VERSION=1.2 sh build.sh test-ios-static
+        REALM_SWIFT_VERSION=1.2 sh build.sh ios-static
+        move_to_clean_dir build/ios/Realm.framework xcode-6
+        rm -rf build
+
+        REALM_SWIFT_VERSION=2.0 sh build.sh prelaunch-simulator
+        REALM_SWIFT_VERSION=2.0 sh build.sh test-ios-static
+        REALM_SWIFT_VERSION=2.0 sh build.sh ios-static
+        move_to_clean_dir build/ios/Realm.framework xcode-7
+
+        zip --symlinks -r build/ios/realm-framework-ios.zip xcode-6 xcode-7
         ;;
 
     "package-ios-dynamic")
         cd tightdb_objc
-        REALM_SWIFT_VERSION=2.0 sh build.sh ios-dynamic
+        REALM_SWIFT_VERSION=1.2 sh build.sh prelaunch-simulator
+        REALM_SWIFT_VERSION=1.2 sh build.sh ios-dynamic
+        move_to_clean_dir build/ios-dynamic/Realm.framework xcode-6
+        rm -rf build
 
-        cd build/ios-dynamic
-        zip --symlinks -r realm-dynamic-framework-ios.zip Realm.framework
+        REALM_SWIFT_VERSION=2.0 sh build.sh prelaunch-simulator
+        REALM_SWIFT_VERSION=2.0 sh build.sh ios-dynamic
+        move_to_clean_dir build/ios-dynamic/Realm.framework xcode-7
+
+        zip --symlinks -r build/ios-dynamic/realm-dynamic-framework-ios.zip xcode-6 xcode-7
         ;;
 
     "package-osx")
@@ -727,8 +771,6 @@ case "$COMMAND" in
         REALM_SWIFT_VERSION=2.0 sh build.sh osx-swift
 
         cd build/osx
-        cp -R Realm.framework swift-1.2
-        cp -R Realm.framework swift-2.0
         zip --symlinks -r realm-swift-framework-osx.zip swift-1.2 swift-2.0
         ;;
 

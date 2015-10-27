@@ -4,22 +4,42 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
-		<key>Alamofire.xcscheme</key>
+		<key>ChameleonFramework.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 		</dict>
-		<key>KGFloatingDrawer.xcscheme</key>
+		<key>Dollar.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 		</dict>
-		<key>PKHUD.xcscheme</key>
+		<key>Google-Material-Design-Icons-Swift-Google-Material-Design-Icons-Swift.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 		</dict>
-		<key>Pods-HumanKontact WatchKit Extension.xcscheme</key>
+		<key>Google-Material-Design-Icons-Swift.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>Hokusai.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>LNRSimpleNotifications.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>LiquidLoader-LiquidLoader.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>LiquidLoader.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
@@ -39,7 +59,12 @@
 			<key>isShown</key>
 			<false/>
 		</dict>
-		<key>SwiftyJSON.xcscheme</key>
+		<key>SwiftyUserDefaults.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>TKSubmitTransition.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
@@ -47,42 +72,67 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
-		<key>100367C9D874306CE165E9902274AF4B</key>
+		<key>148B4168EDBDC999CDB04C90965D0FDD</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>6EF4FBDD9DDCB5B9B151CD1AC59C03DB</key>
+		<key>2BA7290F6E1B87B832ACC4A172AD19AD</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>8530DEDBC37DD75056E54EB064F88745</key>
+		<key>4474DE3469A39F4FE1E3AFEA2D398275</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>9B30DF08972F7479EDF2E997F7906619</key>
+		<key>87485CBB4BA67F70DEC4977D77C9A4F2</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>B9A04D3C9B208813656510FDA8ADAE02</key>
+		<key>9883DF06E8D2D66F932D42F0FCA1F6E9</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>BFDE71451243584C93A59FD79986D519</key>
+		<key>9EAD3DB630AD617BC143FF8EF89DB208</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>D457ED56771B2F82739055AADC84C2CD</key>
+		<key>BA2436754889789C5C698373A2C67495</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>D5E6A019D860C6A9ED6262EB3193FF9C</key>
+		<key>CD5EDD9CC4350F18829A3C854B30E416</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>D114A5CC5C953FEA6759C91DAA86139F</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>E33BDD91261C54EB538A2B8080554D0D</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>ED45131C63421FAE9C0F03141C78EF71</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>F2E8D67ADD5F761736EA67E9604AC0F0</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>F5AACB9459C7B49B13B30174562AA3C2</key>
 		<dict>
 			<key>primary</key>
 			<true/>

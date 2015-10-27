@@ -1,23 +1,25 @@
 # Uncomment this line to define a global platform for your project
+xcodeproj 'keyboardTest.xcodeproj'
+workspace 'keyboardTest.xcworkspace'
 source 'https://github.com/CocoaPods/Specs.git'
-platform :ios, '8.2'
+platform :ios, '9.0'
 use_frameworks!
 
 def shared_pods
-  pod 'RealmSwift'
-end 
+  pod 'RealmSwift', '~> 0.95.1'
+end
 
 target 'keyboardTest' do
   shared_pods
-  pod 'KGFloatingDrawer', :path => "../"
-  pod 'SwiftyJSON', '~> 2.2.1'
-  pod 'Alamofire', '~> 1.3'
-  pod 'PKHUD'
+  pod 'ChameleonFramework/Swift'
+  pod 'TKSubmitTransition'
+  pod 'Hokusai'
+  pod 'Dollar'
+  pod 'LiquidLoader'
+  pod 'LNRSimpleNotifications'
+  pod 'Google-Material-Design-Icons-Swift', '~> 1.0.1'
+  pod 'SwiftyUserDefaults'
 end
 
 target 'keyboardTestTests' do
-end
-
-target 'HumanKontact WatchKit Extension' do
-  shared_pods
 end

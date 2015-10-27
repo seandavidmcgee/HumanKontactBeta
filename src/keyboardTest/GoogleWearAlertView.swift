@@ -76,7 +76,7 @@ class GoogleWearAlertView: UIView, UIGestureRecognizerDelegate {
         self.alertPosition = position
         
         // Setup background color and choose icon
-        var imageProvided = image != nil
+        let imageProvided = image != nil
         switch type {
             case .Error:
                 backgroundColor = UIColor.errorRed()
@@ -103,7 +103,7 @@ class GoogleWearAlertView: UIView, UIGestureRecognizerDelegate {
         }
         
         // Setup self
-        setTranslatesAutoresizingMaskIntoConstraints(false)
+        self.translatesAutoresizingMaskIntoConstraints = false
         frame.size = CGSizeMake(viewController.view.bounds.size.width * alertViewSize, viewController.view.bounds.width * alertViewSize)
         layer.cornerRadius = self.frame.width/2
         self.layer.shadowColor = UIColor.blackColor().CGColor
@@ -138,7 +138,7 @@ class GoogleWearAlertView: UIView, UIGestureRecognizerDelegate {
     }
     
     required init(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
+        super.init(coder: aDecoder)!
         NSException(name: "init from storyboard error", reason: "alert cannot be initalized from a storybaord", userInfo: nil).raise()
     }
     
@@ -174,8 +174,8 @@ class GoogleWearAlertView: UIView, UIGestureRecognizerDelegate {
         
         if UIInterfaceOrientationIsLandscape(UIApplication.sharedApplication().statusBarOrientation) {
             
-            var centerX = viewController.view.bounds.width/2
-            var centerY = viewController.view.bounds.height/2
+            let centerX = viewController.view.bounds.width/2
+            let centerY = viewController.view.bounds.height/2
             center = CGPointMake(centerX, centerY)
             
         } else {

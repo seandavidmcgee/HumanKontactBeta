@@ -6,13 +6,18 @@
 //  Copyright (c) 2015 3 Callistos Services. All rights reserved.
 //
 
+import UIKit
 import Foundation
+import AddressBook
 import RealmSwift
 
 class HKEmail: Object {
-    dynamic var email: String = ""
+    dynamic var uuid = NSUUID().UUIDString
     
-    override class func primaryKey() -> String {
-        return "email"
+    dynamic var email = ""
+    dynamic var label = kABHomeLabel as! String
+    
+    override class func primaryKey() -> String? {
+        return "uuid"
     }
 }

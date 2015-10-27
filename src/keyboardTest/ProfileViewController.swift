@@ -9,6 +9,7 @@
 import UIKit
 import QuartzCore
 import CoreGraphics
+import RealmSwift
 
 let offset_HeaderStop:CGFloat = 122.0 // At this offset the Header stops its transformations
 let offset_B_LabelHeader:CGFloat = 54.0 // At this offset the Black label reaches the Header
@@ -16,13 +17,15 @@ let distance_W_LabelHeader:CGFloat = 45.0 // The distance between the bottom of 
 
 class ProfileViewController: UIViewController, UIScrollViewDelegate, SwiftPromptsProtocol {
     var prompt = SwiftPromptsView()
-    var person: HKPerson = HKPerson()
     var image:UIImage? = nil
     var imageBG:UIImage? = nil
     var initials: String! = nil
     var nameLabel:String! = nil
     var coLabel:String! = nil
     var jobTitleLabel:String! = nil
+    var FlatHKDark = UIColor(red: 13/255, green: 10/255, blue: 23/255, alpha: 1.0)
+    let control = GlobalVariables.sharedManager
+    var phoneY = CGFloat()
     
     @IBOutlet var scrollView:UIScrollView!
     @IBOutlet var bgView: UIView!
@@ -32,6 +35,7 @@ class ProfileViewController: UIViewController, UIScrollViewDelegate, SwiftPrompt
     @IBOutlet var headerLabel:UILabel!
     @IBOutlet var companyLabel: UILabel!
     @IBOutlet var companyHeaderLabel: UILabel!
+    @IBOutlet weak var favoritesButton: UIButton!
     
     var profileBGImageView: UIImageView = UIImageView()
     var personHeader: UIImageView = UIImageView()
@@ -39,29 +43,35 @@ class ProfileViewController: UIViewController, UIScrollViewDelegate, SwiftPrompt
     var headerBlurImageView:UIImageView = UIImageView()
     var favIcon: UIButton!
     var profileFieldY: CGFloat = 303
+    var emailFieldY = CGFloat()
+    var fieldCount: Int = 0
+    var emailCount: Int = 0
     var profileFieldArray: [String?] = []
     var visibleFields: CGFloat = 0
     var profileField: UIView!
+    var emailField: UIView!
+    var jobField: UIView!
+    var profileDynamicField: UIView!
     var profilePhone: String!
     var profileEmail: String!
     var initialsLabel: UILabel! = UILabel()
     let favImage = UIImage(named: "Favs")
     let favAdded = UIImage(named: "love")
     var favIncluded: Bool! = false
+    var selectedPerson: String!
+    var person: HKPerson?
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        let image = UIImage(named: "back")
+        let image = UIImage(named: "Dismiss")
         profileBGImageView = UIImageView(frame: self.view.frame)
         profileBGImageView.image = UIImage(named: "BitmapOverlayBG")
         profileBGImageView.alpha = 0.5
         profileBGImageView.contentMode = .ScaleAspectFill
         self.view.addSubview(profileBGImageView)
         self.view.sendSubviewToBack(profileBGImageView)
-        let backTitle = NSAttributedString(string: "Back", attributes: [NSForegroundColorAttributeName: UIColor.whiteColor(), NSFontAttributeName: UIFont(name: "HelveticaNeue-Thin", size: 21.0)!])
-        var back = UIButton(frame: CGRect(x: -10, y: 32, width: 112, height: 21))
+        let back = UIButton(frame: CGRect(x: -25, y: 32, width: 112, height: 22))
         back.setImage(image, forState: UIControlState.Normal)
-        back.setAttributedTitle(backTitle, forState: UIControlState.Normal)
         back.layer.zPosition = 3
         back.addTarget(self, action: "goBack", forControlEvents: UIControlEvents.TouchUpInside)
         self.view.addSubview(back)
@@ -72,29 +82,44 @@ class ProfileViewController: UIViewController, UIScrollViewDelegate, SwiftPrompt
         scrollView.delegate = self
         
         //Favorites
-        favIcon = UIButton(frame: CGRect(x: (self.view.frame.width - 40), y: 25, width: 32, height: 32))
+        favIcon = UIButton(frame: CGRect(x: (self.view.frame.width - 42), y: 22, width: 32, height: 32))
         favIcon.layer.zPosition = 3
+        favIcon.hidden = true
+        favoritesButton.layer.zPosition = 4
+        favoritesButton.layer.cornerRadius = 15
+        favoritesButton.clipsToBounds = true
         
-        for fav in FavPeople.favorites {
-            if fav.fullName == person.fullName {
-                favIcon.setImage(favAdded, forState: UIControlState.Normal)
-                favIncluded = true
-                favIcon.addTarget(self, action: "removeFavorite", forControlEvents: .TouchUpInside)
+        if FavPeople.favorites.count > 0 {
+            for fav in FavPeople.favorites {
+                if fav.fullName == nameLabel {
+                    favIcon.setImage(favAdded, forState: UIControlState.Normal)
+                    favIcon.tintColor = .whiteColor()
+                    favIncluded = true
+                    favIcon.addTarget(self, action: "removeFavorite", forControlEvents: .TouchUpInside)
+                    favoritesButton.backgroundColor = .whiteColor()
+                    favoritesButton.setTitle("Favorite", forState: .Normal)
+                    favoritesButton.setTitleColor(UIColor(hex: 0xFB2155), forState: .Normal)
+                    favoritesButton.titleLabel!.text = "Favorite"
+                    favoritesButton.titleLabel?.textColor = UIColor(hex: 0xFB2155)
+                    favoritesButton.addTarget(self, action: "removeFavorite", forControlEvents: .TouchUpInside)
+                }
             }
         }
         
         if !favIncluded {
-            favIcon.addTarget(self, action: "favoriteProfile", forControlEvents: UIControlEvents.TouchUpInside)
+            favIcon.addTarget(self, action: "favoriteProfile", forControlEvents: .TouchUpInside)
             favIcon.setImage(favImage, forState: UIControlState.Normal)
+            favIcon.tintColor = UIColor(hex: 0xFB2155)
+            favoritesButton.addTarget(self, action: "favoriteProfile", forControlEvents: .TouchUpInside)
         }
         self.view.addSubview(favIcon)
         
         // Header - Image
-        var headerSizeOffset: CGFloat = header.frame.width * 0.0833
-        var headerYOffset: CGFloat = header.frame.height * 0.1136
+        let headerSizeOffset: CGFloat = header.frame.width * 0.0833
+        let headerYOffset: CGFloat = header.frame.height * 0.1136
         
         personHeader = UIImageView(frame: CGRect(x: -headerSizeOffset, y: headerYOffset, width: header.frame.width - headerSizeOffset, height: header.frame.height - headerSizeOffset))
-        personHeader.image = imageBG?.blurredImageWithRadius(20, iterations: 20, tintColor: UIColor(white: 0.7, alpha: 0.3))!
+        personHeader.image = imageBG?.blurredImageWithRadius(20, iterations: 20, tintColor: UIColor(red: 0, green: 0, blue: 13/255, alpha: 0.3))!
         personHeader.contentMode = .ScaleAspectFill
         
         headerImageView = UIImageView(frame: personHeader.frame)
@@ -106,7 +131,7 @@ class ProfileViewController: UIViewController, UIScrollViewDelegate, SwiftPrompt
         header.backgroundColor = UIColor(gradientStyle: .LeftToRight, withFrame: header.frame, andColors: [UIColor(hex: 0x172445), UIColor(hex: 0x3E6D8E)])
         header.clipsToBounds = true
         
-        var profileImageView: UIImageView! = UIImageView(frame: avatarImage.bounds)
+        let profileImageView: UIImageView! = UIImageView(frame: avatarImage.bounds)
         profileImageView.image = image
         profileImageView.contentMode = .ScaleAspectFill
         initialsLabel.frame = CGRect(x: 0, y: 0, width: profileImageView.frame.width, height: profileImageView.frame.height)
@@ -114,29 +139,41 @@ class ProfileViewController: UIViewController, UIScrollViewDelegate, SwiftPrompt
             initialsLabel.text = initials
         }
         initialsLabel.font = UIFont(name: "HelveticaNeue-Thin", size: 28)!
-        initialsLabel.textColor = UIColor.whiteColor()
+        initialsLabel.textColor = UIColor.blackColor()
         initialsLabel.textAlignment = NSTextAlignment.Center
         profileImageView.addSubview(initialsLabel)
         avatarImage.insertSubview(profileImageView!, atIndex: 0)
+        
+        if phonesProfileArray.count != 0 {
+            createProfileFieldsBG()
+        }
+        
+        person = try! Realm().objectForPrimaryKey(HKPerson.self, key: selectedPerson!)
+        let personColor = person!.nameColor
         
         for phone in phonesProfileArray {
             // Grab each key, value pair from the person dictionary
             for (key,value) in phone {
                 profilePhone = "\(key): \(value)"
-                createPhoneFields(profilePhone)
+                createPhoneFields(profilePhone, color: personColor)
+                createFacetimeFields(key, value: value, color: personColor)
                 visibleFields++
             }
+        }
+        if emailsProfileArray.count != 0 {
+            createProfileEmailsBG()
         }
         for email in emailsProfileArray {
             // Grab each key, value pair from the person dictionary
             for (key,value) in email {
                 profileEmail = "\(key): \(value)"
-                createEmailFields(profileEmail)
+                createEmailFields(profileEmail, color: personColor)
                 visibleFields++
             }
         }
         if (jobTitleLabel != nil && jobTitleLabel != "") {
-            createJobFields("Job Title: \(jobTitleLabel)")
+            createProfileJobsBG()
+            createJobFields("Job Title: \(jobTitleLabel)", color: personColor)
             visibleFields++
         }
         //createProfileFieldsBG()
@@ -148,12 +185,13 @@ class ProfileViewController: UIViewController, UIScrollViewDelegate, SwiftPrompt
         emailsArray.removeAll(keepCapacity: false)
     }
     
-    override func shouldAutorotate() -> Bool {
-        return false
+    override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated)
+        
     }
     
-    override func supportedInterfaceOrientations() -> Int {
-        return Int(UIInterfaceOrientationMask.Portrait.rawValue)
+    override func shouldAutorotate() -> Bool {
+        return false
     }
     
     override func viewDidDisappear(animated: Bool) {
@@ -166,106 +204,164 @@ class ProfileViewController: UIViewController, UIScrollViewDelegate, SwiftPrompt
     }
     
     func createProfileFieldsBG() {
-        //var profileFieldBG = UIImageView(frame: CGRect(x: 0, y: 303, width: self.view.frame.width, height: (55*visibleFields)-11))
-        //profileFieldBG.image = imageBG?.blurredImageWithRadius(20, iterations: 20, tintColor: UIColor(white: 0.7, alpha: 0.3))
-        //profileFieldBG.contentMode = UIViewContentMode.ScaleAspectFill
-        //profileFieldBG.clipsToBounds = true
-        //scrollView.insertSubview(profileFieldBG, atIndex: 0)
-    }
-    
-    func createPhoneFields(sender: String!) {
-        profileField = UIView(frame: CGRect(x: 0, y: profileFieldY, width: self.view.frame.width, height: 44))
-        profileFieldY = profileFieldY + 55
-        profileField.backgroundColor = UIColor(gradientStyle: UIGradientStyle.LeftToRight, withFrame: profileField.frame, andColors: [FlatHKDark(), UIColor(white: 1.0, alpha: 0.4)])
-        profileField.alpha = 0.7
+        profileField = UIView(frame: CGRect(x: 0, y: profileFieldY, width: self.view.frame.width, height: CGFloat((44 * phonesProfileArray.count) + 30)))
+        profileField.backgroundColor = UIColor(red: 0, green: 0, blue: 13/255, alpha: 0.5)
         profileField.layer.cornerRadius = 0
         let shadowPath = UIBezierPath(roundedRect: profileField.bounds, cornerRadius: 0)
         
         profileField.layer.masksToBounds = false
-        profileField.layer.shadowColor = UIColor.blackColor().CGColor
-        profileField.layer.shadowOffset = CGSize(width: 0, height: 2);
-        profileField.layer.shadowOpacity = 0.3
+        profileField.layer.shadowColor = UIColor(hex: 0x00000d).CGColor
+        profileField.layer.shadowOffset = CGSize(width: 0, height: 2)
+        profileField.layer.shadowRadius = 5.0
+        profileField.layer.shadowOpacity = 0.5
         profileField.layer.shadowPath = shadowPath.CGPath
         
-        var profileFieldLabel = UILabel(frame: CGRect(x: 10, y: 11, width: 380, height: 21))
-        profileFieldLabel.textColor = UIColor.whiteColor()
-        profileFieldLabel.font = UIFont(name: "AvenirNext-Regular", size: 15)
-        profileFieldLabel.text = (sender)!
+        let profileFieldMainLabel = UILabel(frame: CGRect(x: 5, y: 5, width: 150, height: 20))
+        profileFieldMainLabel.textColor = UIColor.whiteColor()
+        profileFieldMainLabel.font = UIFont(name: "AvenirNext-Regular", size: 17)!
+        profileFieldMainLabel.text = "Phone Numbers"
+        profileField.addSubview(profileFieldMainLabel)
+    }
+    
+    func createProfileEmailsBG() {
+        if profileField != nil {
+            profileFieldY += profileField.frame.height
+        }
+        emailFieldY = CGFloat(profileFieldY + 15)
+        emailField = UIView(frame: CGRect(x: 0, y: emailFieldY, width: self.view.frame.width, height: CGFloat((44 * emailsProfileArray.count) + 30)))
+        emailField.backgroundColor = UIColor(red: 0, green: 0, blue: 13/255, alpha: 1.0)
+        emailField.layer.cornerRadius = 0
+        let shadowPath = UIBezierPath(roundedRect: emailField.bounds, cornerRadius: 0)
         
-        profileField.addSubview(profileFieldLabel)
+        emailField.layer.masksToBounds = false
+        emailField.layer.shadowColor = UIColor(hex: 0x00000d).CGColor
+        emailField.layer.shadowOffset = CGSize(width: 0, height: 2)
+        emailField.layer.shadowRadius = 5.0
+        emailField.layer.shadowOpacity = 0.5
+        emailField.layer.shadowPath = shadowPath.CGPath
         
-        var mobilePhoneBtn = UIButton(frame: CGRect(x: 224, y: 11, width: 22, height: 22))
+        let profileFieldEmailLabel = UILabel(frame: CGRect(x: 5, y: 5, width: 150, height: 20))
+        profileFieldEmailLabel.textColor = UIColor.whiteColor()
+        profileFieldEmailLabel.font = UIFont(name: "AvenirNext-Regular", size: 17)!
+        profileFieldEmailLabel.text = "Emails"
+        emailField.addSubview(profileFieldEmailLabel)
+    }
+    
+    func createProfileJobsBG() {
+        var jobFieldY = CGFloat()
+        if emailsProfileArray.count != 0 && phonesProfileArray.count != 0 {
+            jobFieldY = emailField.frame.maxY + 15
+        } else if emailsProfileArray.count != 0 && phonesProfileArray.count == 0 {
+            jobFieldY = emailField.frame.maxY + 15
+        } else if emailsProfileArray.count == 0 && phonesProfileArray.count != 0 {
+            jobFieldY = profileField.frame.maxY + 15
+        } else {
+            jobFieldY = profileFieldY
+        }
+        jobField = UIView(frame: CGRect(x: 0, y: jobFieldY, width: self.view.frame.width, height: 74))
+        jobField.backgroundColor = UIColor(red: 0, green: 0, blue: 13/255, alpha: 1.0)
+        jobField.layer.cornerRadius = 0
+        let shadowPath = UIBezierPath(roundedRect: jobField.bounds, cornerRadius: 0)
+        
+        jobField.layer.masksToBounds = false
+        jobField.layer.shadowColor = UIColor(hex: 0x00000d).CGColor
+        jobField.layer.shadowOffset = CGSize(width: 0, height: 2)
+        jobField.layer.shadowRadius = 5.0
+        jobField.layer.shadowOpacity = 0.5
+        jobField.layer.shadowPath = shadowPath.CGPath
+        
+        let profileFieldJobLabel = UILabel(frame: CGRect(x: 5, y: 5, width: 150, height: 20))
+        profileFieldJobLabel.textColor = UIColor.whiteColor()
+        profileFieldJobLabel.font = UIFont(name: "AvenirNext-Regular", size: 17)!
+        profileFieldJobLabel.text = "Jobs"
+        jobField.addSubview(profileFieldJobLabel)
+    }
+    
+    func createPhoneFields(sender: String, color: String) {
+        phoneY = CGFloat(25 + (fieldCount * 44) + 5)
+        let profileFieldMask = UIView(frame: CGRect(x: 5, y: phoneY, width: profileField.frame.width - 10, height: 34))
+        profileFieldMask.backgroundColor = UIColor(hexString: color)
+        profileFieldMask.layer.cornerRadius = 0
+        fieldCount++
+        
+        let profileFieldLabel = UILabel(frame: CGRect(x: 10, y: 8, width: 335, height: 20))
+        profileFieldLabel.textColor = UIColor.blackColor()
+        profileFieldLabel.font = UIFont(name: "AvenirNext-Regular", size: 14)!
+        profileFieldLabel.text = (sender)
+        profileFieldMask.addSubview(profileFieldLabel)
+        
+        let mobilePhoneBtn = UIButton(frame: CGRect(x: 280, y: 4, width: 25, height: 28))
         mobilePhoneBtn.setImage(UIImage(named: "profileUtility1"), forState: UIControlState.Normal)
+        mobilePhoneBtn.tintColor = UIColor.blackColor()
         mobilePhoneBtn.tag = 50
         mobilePhoneBtn.setTitle(sender, forState: UIControlState.Normal)
         mobilePhoneBtn.setTitleColor(UIColor.clearColor(), forState: UIControlState.Normal)
         mobilePhoneBtn.imageEdgeInsets = UIEdgeInsets(top: -10, left: -10, bottom: -10, right: -10)
         mobilePhoneBtn.addTarget(self, action: "profileActions:", forControlEvents: UIControlEvents.TouchDown)
-        profileField.addSubview(mobilePhoneBtn)
-        var mobileTxtBtn = UIButton(frame: CGRect(x: 280, y: 11, width: 22, height: 22))
+        profileFieldMask.addSubview(mobilePhoneBtn)
+        
+        let mobileTxtBtn = UIButton(frame: CGRect(x: 336, y: 4, width: 28, height: 28))
         mobileTxtBtn.setImage(UIImage(named: "profileUtility2"), forState: UIControlState.Normal)
+        mobileTxtBtn.tintColor = UIColor.blackColor()
         mobileTxtBtn.tag = 51
         mobileTxtBtn.setTitle(sender, forState: UIControlState.Normal)
         mobileTxtBtn.setTitleColor(UIColor.clearColor(), forState: UIControlState.Normal)
         mobileTxtBtn.imageEdgeInsets = UIEdgeInsets(top: -10, left: -10, bottom: -10, right: -10)
         mobileTxtBtn.addTarget(self, action: "profileActions:", forControlEvents: UIControlEvents.TouchDown)
-        profileField.addSubview(mobileTxtBtn)
-        facetimeOption(sender)
+        profileFieldMask.addSubview(mobileTxtBtn)
+        profileField.addSubview(profileFieldMask)
         scrollView.addSubview(profileField)
     }
     
-    func createEmailFields(sender: String!) {
-        profileField = UIView(frame: CGRect(x: 0, y: profileFieldY, width: self.view.frame.width, height: 44))
-        profileFieldY = profileFieldY + 55
-        profileField.backgroundColor = UIColor(gradientStyle: UIGradientStyle.LeftToRight, withFrame: profileField.frame, andColors: [FlatHKDark(), UIColor(white: 1.0, alpha: 0.4)])
-        profileField.alpha = 0.7
-        profileField.layer.cornerRadius = 0
-        let shadowPath = UIBezierPath(roundedRect: profileField.bounds, cornerRadius: 0)
+    func createFacetimeFields(sender: String, value: String, color: String) {
+        if sender == "mobile" || sender == "iPhone" {
+            facetime(value, color: color)
+        }
+    }
+    
+    func createEmailFields(sender: String, color: String) {
+        phoneY = CGFloat(25 + (emailCount * 44) + 5)
+        let profileFieldMask = UIView(frame: CGRect(x: 5, y: phoneY, width: emailField.frame.width - 10, height: 34))
+        profileFieldMask.backgroundColor = UIColor(hexString: color)
+        profileFieldMask.layer.cornerRadius = 0
+        emailCount++
         
-        profileField.layer.masksToBounds = false
-        profileField.layer.shadowColor = UIColor.blackColor().CGColor
-        profileField.layer.shadowOffset = CGSize(width: 0, height: 2);
-        profileField.layer.shadowOpacity = 0.3
-        profileField.layer.shadowPath = shadowPath.CGPath
+        let profileFieldLabel = UILabel(frame: CGRect(x: 10, y: 8, width: 335, height: 20))
+        profileFieldLabel.textColor = UIColor.blackColor()
+        profileFieldLabel.font = UIFont(name: "AvenirNext-Regular", size: 14)!
+        profileFieldLabel.lineBreakMode = .ByWordWrapping
+        profileFieldLabel.numberOfLines = 2
+        profileFieldLabel.text = (sender)
+        profileFieldMask.addSubview(profileFieldLabel)
         
-        var profileFieldLabel = UILabel(frame: CGRect(x: 10, y: 11, width: 380, height: 21))
-        profileFieldLabel.textColor = UIColor.whiteColor()
-        profileFieldLabel.font = UIFont(name: "AvenirNext-Regular", size: 15)
-        profileFieldLabel.text = (sender)!
-        
-        profileField.addSubview(profileFieldLabel)
-        var emailBtn = UIButton(frame: CGRect(x: 336, y: 9, width: 28, height: 28))
+        let emailBtn = UIButton(frame: CGRect(x: 336, y: 8, width: 32, height: 20))
         emailBtn.setImage(UIImage(named: "profileUtility3"), forState: UIControlState.Normal)
+        emailBtn.tintColor = UIColor.blackColor()
         emailBtn.tag = 53
         emailBtn.setTitle(sender, forState: UIControlState.Normal)
         emailBtn.setTitleColor(UIColor.clearColor(), forState: UIControlState.Normal)
         emailBtn.imageEdgeInsets = UIEdgeInsets(top: -10, left: -10, bottom: -10, right: -10)
         emailBtn.addTarget(self, action: "profileActions:", forControlEvents: UIControlEvents.TouchDown)
-        profileField.addSubview(emailBtn)
-        scrollView.addSubview(profileField)
+        profileFieldMask.addSubview(emailBtn)
+        emailField.addSubview(profileFieldMask)
+        scrollView.addSubview(emailField)
     }
     
-    func createJobFields(sender: String!) {
-        profileField = UIView(frame: CGRect(x: 0, y: profileFieldY, width: self.view.frame.width, height: 44))
-        profileFieldY = profileFieldY + 55
-        profileField.backgroundColor = UIColor(gradientStyle: UIGradientStyle.LeftToRight, withFrame: profileField.frame, andColors: [FlatHKDark(), UIColor(white: 1.0, alpha: 0.4)])
-        profileField.alpha = 0.7
-        profileField.layer.cornerRadius = 0
-        let shadowPath = UIBezierPath(roundedRect: profileField.bounds, cornerRadius: 0)
+    func createJobFields(sender: String, color: String) {
+        let profileFieldMask = UIView(frame: CGRect(x: 5, y: 30, width: jobField.frame.width - 10, height: 34))
+        profileFieldMask.backgroundColor = UIColor(hexString: color)
+        profileFieldMask.layer.cornerRadius = 0
         
-        profileField.layer.masksToBounds = false
-        profileField.layer.shadowColor = UIColor.blackColor().CGColor
-        profileField.layer.shadowOffset = CGSize(width: 0, height: 2);
-        profileField.layer.shadowOpacity = 0.3
-        profileField.layer.shadowPath = shadowPath.CGPath
+        let profileFieldLabel = UILabel(frame: CGRect(x: 10, y: 8, width: 335, height: 20))
+        profileFieldLabel.textColor = UIColor.blackColor()
+        profileFieldLabel.font = UIFont(name: "AvenirNext-Regular", size: 14)!
+        profileFieldLabel.lineBreakMode = .ByWordWrapping
+        profileFieldLabel.numberOfLines = 2
+        profileFieldLabel.text = (sender)
         
-        var profileFieldLabel = UILabel(frame: CGRect(x: 10, y: 11, width: 380, height: 21))
-        profileFieldLabel.textColor = UIColor.whiteColor()
-        profileFieldLabel.font = UIFont(name: "AvenirNext-Regular", size: 15)
-        profileFieldLabel.text = (sender)!
-        
-        profileField.addSubview(profileFieldLabel)
-        scrollView.addSubview(profileField)
+        profileFieldMask.addSubview(profileFieldLabel)
+        jobField.addSubview(profileFieldMask)
+        scrollView.addSubview(jobField)
     }
     
     func profileActions(sender: UIButton!) {
@@ -286,55 +382,45 @@ class ProfileViewController: UIViewController, UIScrollViewDelegate, SwiftPrompt
         }
         if (sender.tag == 53) {
             emailToSend = sender.titleLabel!.text!
-            var index = emailToSend.indexOfCharacter(":")!
-            var cleanedEmail = emailToSend.substringFromIndex(index+1).removeWhitespace()
+            let index = emailToSend.characters.indexOf(":")
+            let cleanedEmail = emailToSend.substringFromIndex((index?.successor())!).removeWhitespace()
             emailPressed(cleanedEmail)
         }
     }
     
     func callPressed (sender: AnyObject!) {
-        var phoneNumber: String! = sender as? String
-        var strippedPhoneNumber = phoneNumber.stringByReplacingOccurrencesOfString("[^0-9 ]", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range:nil);
+        let phoneNumber: String! = sender as? String
+        let strippedPhoneNumber = phoneNumber.stringByReplacingOccurrencesOfString("[^0-9 ]", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range:nil);
         var cleanNumber = strippedPhoneNumber.removeWhitespace()
-        cleanNumber.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
-        if (count(cleanNumber.utf16) > 1){
+        cleanNumber = cleanNumber.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
+        if (cleanNumber.utf16.count > 1){
             callNumber(cleanNumber)
         } else {
-            let alert = UIAlertView()
+            let alert = UIAlertController()
             alert.title = "Sorry!"
             alert.message = "Phone number is not available."
-            alert.addButtonWithTitle("Ok")
-            alert.show()
+            let okAction = UIAlertAction(title:  NSLocalizedString("Ok", comment: ""), style: .Default) { (action) in
+            }
+            alert.addAction(okAction)
+            presentViewController(alert, animated: true, completion: nil)
         }
     }
     
     func textPressed (sender: AnyObject!) {
-        var phoneNumber: String! = sender as? String
-        var strippedPhoneNumber = phoneNumber.stringByReplacingOccurrencesOfString("[^0-9 ]", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range:nil);
+        let phoneNumber: String! = sender as? String
+        let strippedPhoneNumber = phoneNumber.stringByReplacingOccurrencesOfString("[^0-9 ]", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range:nil);
         var cleanNumber = strippedPhoneNumber.removeWhitespace()
-        cleanNumber.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
-        if (count(cleanNumber.utf16) > 1){
+        cleanNumber = cleanNumber.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
+        if (cleanNumber.utf16.count > 1){
             textNumber(cleanNumber)
         } else {
-            let alert = UIAlertView()
+            let alert = UIAlertController()
             alert.title = "Sorry!"
-            alert.message = "Phone number is not available for text messaging."
-            alert.addButtonWithTitle("Ok")
-            alert.show()
-        }
-    }
-    
-    func facetimeOption (sender: String!) {
-        var phoneNumber = sender
-        var strippedPhoneNumber = phoneNumber.stringByReplacingOccurrencesOfString("[^0-9 ]", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range:nil);
-        var cleanNumber = strippedPhoneNumber.removeWhitespace()
-        cleanNumber.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
-        
-        if (count(cleanNumber.utf16) > 1){
-            facetime(cleanNumber)
-        }
-        else {
-            return
+            alert.message = "Phone number is not available."
+            let okAction = UIAlertAction(title:  NSLocalizedString("Ok", comment: ""), style: .Default) { (action) in
+            }
+            alert.addAction(okAction)
+            presentViewController(alert, animated: true, completion: nil)
         }
     }
     
@@ -356,39 +442,70 @@ class ProfileViewController: UIViewController, UIScrollViewDelegate, SwiftPrompt
         }
     }
     
-    private func facetime(phoneNumber:String) {
+    private func facetime(phoneNumber:String, color: String) {
         if let facetimeURL:NSURL = NSURL(string: "facetime://\(phoneNumber)") {
             let application:UIApplication = UIApplication.sharedApplication()
             if (application.canOpenURL(facetimeURL)) {
-                var mobileFacetimeBtn = UIButton(frame: CGRect(x: 336, y: 13, width: 32, height: 18))
+                profileField.frame.height += 44
+                phoneY = CGFloat(25 + (fieldCount * 44) + 5)
+                let profileFieldMask = UIView(frame: CGRect(x: 5, y: phoneY, width: profileField.frame.width - 10, height: 34))
+                profileFieldMask.backgroundColor = UIColor(hexString: color)
+                profileFieldMask.layer.cornerRadius = 0
+                fieldCount++
+                
+                let profileFieldLabel = UILabel(frame: CGRect(x: 10, y: 8, width: 335, height: 20))
+                profileFieldLabel.textColor = UIColor.blackColor()
+                profileFieldLabel.font = UIFont(name: "AvenirNext-Regular", size: 14)!
+                profileFieldLabel.text = ("facetime: \(phoneNumber)")
+                profileFieldMask.addSubview(profileFieldLabel)
+                
+                let mobileFacetimeBtn = UIButton(frame: CGRect(x: 336, y: 8, width: 32, height: 20))
                 mobileFacetimeBtn.setImage(UIImage(named: "profileUtility4"), forState: UIControlState.Normal)
+                mobileFacetimeBtn.tintColor = UIColor.blackColor()
                 mobileFacetimeBtn.tag = 52
                 mobileFacetimeBtn.setTitle(phoneNumber, forState: UIControlState.Normal)
                 mobileFacetimeBtn.setTitleColor(UIColor.clearColor(), forState: UIControlState.Normal)
                 mobileFacetimeBtn.imageEdgeInsets = UIEdgeInsets(top: -10, left: -10, bottom: -10, right: -10)
                 mobileFacetimeBtn.addTarget(self, action: "profileActions:", forControlEvents: UIControlEvents.TouchDown)
-                profileField.addSubview(mobileFacetimeBtn)
+                profileFieldMask.addSubview(mobileFacetimeBtn)
+                profileField.addSubview(profileFieldMask)
             }
         }
     }
     
     private func facetimePressed(phoneNumber:String) {
-        if let facetimeURL:NSURL = NSURL(string: "facetime://\(phoneNumber)") {
-            let application:UIApplication = UIApplication.sharedApplication()
-            if (application.canOpenURL(facetimeURL)) {
-                application.openURL(facetimeURL);
-            } else {
-                let alert = UIAlertView()
-                alert.title = "Sorry!"
-                alert.message = "Phone number is not available for Facetime."
-                alert.addButtonWithTitle("Ok")
-                alert.show()
+        let phoneNumber = phoneNumber
+        let strippedPhoneNumber = phoneNumber.stringByReplacingOccurrencesOfString("[^0-9 ]", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range:nil);
+        var cleanNumber = strippedPhoneNumber.removeWhitespace()
+        cleanNumber = cleanNumber.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
+        if (cleanNumber.utf16.count > 1) {
+            if let facetimeURL:NSURL = NSURL(string: "facetime://\(phoneNumber)") {
+                let application:UIApplication = UIApplication.sharedApplication()
+                if (application.canOpenURL(facetimeURL)) {
+                    application.openURL(facetimeURL);
+                } else {
+                    let alert = UIAlertController()
+                    alert.title = "Sorry!"
+                    alert.message = "Phone number is not available for Facetime."
+                    let okAction = UIAlertAction(title:  NSLocalizedString("Ok", comment: ""), style: .Default) { (action) in
+                    }
+                    alert.addAction(okAction)
+                    presentViewController(alert, animated: true, completion: nil)
+                }
             }
+        } else {
+            let alert = UIAlertController()
+            alert.title = "Sorry!"
+            alert.message = "Phone number is not available for Facetime."
+            let okAction = UIAlertAction(title:  NSLocalizedString("Ok", comment: ""), style: .Default) { (action) in
+            }
+            alert.addAction(okAction)
+            presentViewController(alert, animated: true, completion: nil)
         }
     }
     
     private func emailPressed(email:String) {
-        println(email)
+        print(email)
         if let emailUrl:NSURL = NSURL(string: "mailto:\(email)") {
             let application:UIApplication = UIApplication.sharedApplication()
             if (application.canOpenURL(emailUrl)) {
@@ -407,7 +524,7 @@ class ProfileViewController: UIViewController, UIScrollViewDelegate, SwiftPrompt
     
     func scrollViewDidScroll(scrollView: UIScrollView) {
         
-        var offset = scrollView.contentOffset.y
+        let offset = scrollView.contentOffset.y
         var avatarTransform = CATransform3DIdentity
         var headerTransform = CATransform3DIdentity
         
@@ -453,11 +570,13 @@ class ProfileViewController: UIViewController, UIScrollViewDelegate, SwiftPrompt
                 if avatarImage.layer.zPosition < header.layer.zPosition{
                     header.layer.zPosition = 0
                     header.clipsToBounds = true
+                    favIcon.hidden = true
                 }
                 
             } else {
                 if avatarImage.layer.zPosition >= header.layer.zPosition{
                     header.layer.zPosition = 2
+                    favIcon.hidden = false
                     //header.clipsToBounds = false
                 }
             }
@@ -510,18 +629,31 @@ class ProfileViewController: UIViewController, UIScrollViewDelegate, SwiftPrompt
     func clickedOnTheMainButton() {
         prompt.dismissPrompt()
         GoogleWearAlert.showAlert(title:"Added", image:nil, type: .Success, duration: 2.0, inViewController: self)
-        favPeople.append(self.person)
         self.favIcon.removeTarget(self, action: "favoriteProfile", forControlEvents: .TouchUpInside)
-        self.backgroundAddFavorite()
+        self.favoritesButton.removeTarget(self, action: "favoriteProfile", forControlEvents: .TouchUpInside)
+        self.addFavDB()
         self.favIcon.setImage(self.favAdded, forState: .Normal)
+        self.favIcon.tintColor = .whiteColor()
+        self.favoritesButton.backgroundColor = .whiteColor()
+        self.favoritesButton.setTitle("Favorite", forState: .Normal)
+        self.favoritesButton.setTitleColor(UIColor(hex: 0xFB2155), forState: .Normal)
+        self.favoritesButton.titleLabel!.text = "Favorite"
+        self.favoritesButton.titleLabel?.textColor = UIColor(hex: 0xFB2155)
     }
     
     func clickedOnTheRemoveButton() {
         prompt.dismissPrompt()
         GoogleWearAlert.showAlert(title:"Removed", image:nil, type: .Remove, duration: 2.0, inViewController: self)
         self.favIcon.removeTarget(self, action: "removeFavorite", forControlEvents: .TouchUpInside)
+        self.favoritesButton.removeTarget(self, action: "removeFavorite", forControlEvents: .TouchUpInside)
         self.removeFavDB()
         self.favIcon.setImage(self.favImage, forState: .Normal)
+        self.favIcon.tintColor = UIColor(hex: 0xFB2155)
+        self.favoritesButton.backgroundColor = UIColor(hex: 0xFB2155)
+        self.favoritesButton.setTitle("Add to Favorites", forState: .Normal)
+        self.favoritesButton.setTitleColor(UIColor.whiteColor(), forState: .Normal)
+        self.favoritesButton.titleLabel!.text = "Add to Favorites"
+        self.favoritesButton.titleLabel?.textColor = UIColor.whiteColor()
     }
     
     func clickedOnTheSecondButton() {
@@ -529,7 +661,7 @@ class ProfileViewController: UIViewController, UIScrollViewDelegate, SwiftPrompt
     }
     
     func promptWasDismissed() {
-        println("Dismissed the prompt")
+        print("Dismissed the prompt")
     }
     
     func removeFavorite() {
@@ -569,52 +701,17 @@ class ProfileViewController: UIViewController, UIScrollViewDelegate, SwiftPrompt
         self.view.addSubview(prompt)
     }
     
-    func backgroundAddFavorite() {
-        let priority = DISPATCH_QUEUE_PRIORITY_DEFAULT
-        dispatch_async(dispatch_get_global_queue(priority, 0)) {
-            favResults.fetchFavorites()
-        }
+    func addFavDB() {
+        backgroundAddFavorite(person!)
+        
         self.favIcon.addTarget(self, action: "removeFavorite", forControlEvents: .TouchUpInside)
+        self.favoritesButton.addTarget(self, action: "removeFavorite", forControlEvents: .TouchUpInside)
     }
     
     func removeFavDB() {
-        favRealm.beginWrite()
-        favRealm.delete(person)
-        favRealm.commitWrite()
-        let priority = DISPATCH_QUEUE_PRIORITY_DEFAULT
-        dispatch_async(dispatch_get_global_queue(priority, 0)) {
-            favResults.fetchFavorites()
-        }
+        backgroundRemoveFavorite(person!)
+        
         self.favIcon.addTarget(self, action: "favoriteProfile", forControlEvents: .TouchUpInside)
-    }
-}
-
-extension String {
-    func replace(string:String, replacement:String) -> String {
-        return self.stringByReplacingOccurrencesOfString(string, withString: replacement, options: NSStringCompareOptions.LiteralSearch, range: nil)
-    }
-    
-    func removeWhitespace() -> String {
-        return self.replace(" ", replacement: "")
-    }
-    
-    public func indexOfCharacter(char: Character) -> Int? {
-        if let idx = find(self, char) {
-            return distance(self.startIndex, idx)
-        }
-        return nil
-    }
-    
-    func substringFromIndex(index:Int) -> String {
-        return self.substringFromIndex(advance(self.startIndex, index))
-    }
-}
-
-extension UIButton {
-    override public func pointInside(point: CGPoint, withEvent event: UIEvent?) -> Bool {
-        var relativeFrame = self.bounds
-        var hitTestEdgeInsets = UIEdgeInsetsMake(-22, -22, -22, -22)
-        var hitFrame = UIEdgeInsetsInsetRect(relativeFrame, hitTestEdgeInsets)
-        return CGRectContainsPoint(hitFrame, point)
+        self.favoritesButton.addTarget(self, action: "favoriteProfile", forControlEvents: .TouchUpInside)
     }
 }

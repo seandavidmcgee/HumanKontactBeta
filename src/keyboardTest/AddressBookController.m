@@ -63,7 +63,7 @@ void refreshAddressBookProcedure(ABAddressBookRef addressBook, CFDictionaryRef i
 
 + (NSString *)indexFile
 {
-    return [[self documentsDirectory] stringByAppendingPathComponent:@"ABSample"];
+    return [[self documentsDirectory] stringByAppendingPathComponent:@"HKIndex"];
 }
 
 - (void)dealloc
@@ -89,7 +89,7 @@ void refreshAddressBookProcedure(ABAddressBookRef addressBook, CFDictionaryRef i
                     NSString *filePath = [self.class indexFile];
                     [self createIndexFromAddresseBookAtPath:filePath];
                     self.indexController = nil;
-                    self.lookupController = [[KannuuIndexController alloc] initWithControllerMode:KannuuControllerModeLookup indexFilePath:filePath numberOfOptions:9];
+                    self.lookupController = [[KannuuIndexController alloc] initWithControllerMode:KannuuControllerModeLookup indexFilePath:filePath numberOfOptions:9 numberOfBranchSelections:999];
                     if (completion)
                     {
                         completion(YES);
@@ -116,7 +116,7 @@ void refreshAddressBookProcedure(ABAddressBookRef addressBook, CFDictionaryRef i
         CFArrayRef people = ABAddressBookCopyArrayOfAllPeople(self.addressBook);
         NSString *indexFile = [self.class indexFile];
 
-        _indexController = [[KannuuIndexController alloc] initWithControllerMode:KannuuControllerModeCreate indexFilePath:indexFile numberOfOptions:9];
+        _indexController = [[KannuuIndexController alloc] initWithControllerMode:KannuuControllerModeCreate indexFilePath:indexFile numberOfOptions:9 numberOfBranchSelections:999];
         for(int i = 0; i < count; i++)
         {
             ABRecordRef person = CFArrayGetValueAtIndex(people, i);

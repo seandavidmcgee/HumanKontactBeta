@@ -16,7 +16,7 @@ public class SwiftPrompts : NSObject {
 
     //// Drawing Methods
 
-    public class func drawSwiftPrompt(#frame: CGRect, backgroundColor: UIColor, headerBarColor: UIColor, bottomBarColor: UIColor, headerTxtColor: UIColor, contentTxtColor: UIColor, outlineColor: UIColor, topLineColor: UIColor, bottomLineColor: UIColor, dismissIconButton: UIColor, promptText: String, textSize: CGFloat, topBarVisibility: Bool, bottomBarVisibility: Bool, headerText: String, headerSize: CGFloat, topLineVisibility: Bool, bottomLineVisibility: Bool, outlineVisibility: Bool, dismissIconVisibility: Bool, initialsVisibility: Bool, initialsText: String, contentTxtFont: String, contentTxtRectY: CGFloat) {
+    public class func drawSwiftPrompt(frame frame: CGRect, backgroundColor: UIColor, headerBarColor: UIColor, bottomBarColor: UIColor, headerTxtColor: UIColor, contentTxtColor: UIColor, outlineColor: UIColor, topLineColor: UIColor, bottomLineColor: UIColor, dismissIconButton: UIColor, promptText: String, textSize: CGFloat, topBarVisibility: Bool, bottomBarVisibility: Bool, headerText: String, headerSize: CGFloat, topLineVisibility: Bool, bottomLineVisibility: Bool, outlineVisibility: Bool, dismissIconVisibility: Bool, initialsVisibility: Bool, initialsText: String, contentTxtFont: String, contentTxtRectY: CGFloat) {
         //// General Declarations
         let context = UIGraphicsGetCurrentContext()
 
@@ -37,7 +37,7 @@ public class SwiftPrompts : NSObject {
 
         if (bottomBarVisibility) {
             //// Rectangle 2 Drawing
-            var rectangle2Path = UIBezierPath(roundedRect: CGRectMake(frame.minX + floor(frame.width * 0.01778 + 0.5), frame.minY + frame.height - 51, floor(frame.width * 0.98667 + 0.5) - floor(frame.width * 0.01778 + 0.5), 41), byRoundingCorners: UIRectCorner.BottomLeft | UIRectCorner.BottomRight, cornerRadii: CGSizeMake(12, 12))
+            let rectangle2Path = UIBezierPath(roundedRect: CGRectMake(frame.minX + floor(frame.width * 0.01778 + 0.5), frame.minY + frame.height - 51, floor(frame.width * 0.98667 + 0.5) - floor(frame.width * 0.01778 + 0.5), 41), byRoundingCorners: [UIRectCorner.BottomLeft, UIRectCorner.BottomRight], cornerRadii: CGSizeMake(12, 12))
             rectangle2Path.closePath()
             bottomBarColor.setFill()
             rectangle2Path.fill()
@@ -60,7 +60,7 @@ public class SwiftPrompts : NSObject {
 
         if (topBarVisibility) {
             //// Rectangle 3 Drawing
-            var rectangle3Path = UIBezierPath(roundedRect: CGRectMake(frame.minX + floor(frame.width * 0.01778 + 0.5), frame.minY + 9, floor(frame.width * 0.98667 + 0.5) - floor(frame.width * 0.01778 + 0.5), 44), byRoundingCorners: UIRectCorner.TopLeft | UIRectCorner.TopRight, cornerRadii: CGSizeMake(0, 0))
+            let rectangle3Path = UIBezierPath(roundedRect: CGRectMake(frame.minX + floor(frame.width * 0.01778 + 0.5), frame.minY + 9, floor(frame.width * 0.98667 + 0.5) - floor(frame.width * 0.01778 + 0.5), 44), byRoundingCorners: [UIRectCorner.TopLeft, UIRectCorner.TopRight], cornerRadii: CGSizeMake(0, 0))
             rectangle3Path.closePath()
             headerBarColor.setFill()
             rectangle3Path.fill()
@@ -103,7 +103,7 @@ public class SwiftPrompts : NSObject {
         if (dismissIconVisibility) {
             //// Shape 2 Drawing
             let text2FontAttributes = [NSFontAttributeName: UIFont(name: "HelveticaNeue-Thin", size: 17)!, NSForegroundColorAttributeName: headerTxtColor, NSParagraphStyleAttributeName: text2Style]
-            var shape2Path = UIBezierPath(ovalInRect: CGRectMake(0, 0, 50, 50))
+            let shape2Path = UIBezierPath(ovalInRect: CGRectMake(0, 0, 50, 50))
             NSString(string: initialsText).drawInRect(CGRectMake(0, 0, 50, 50), withAttributes: text2FontAttributes)
             dismissIconButton.setFill()
             shape2Path.fill()

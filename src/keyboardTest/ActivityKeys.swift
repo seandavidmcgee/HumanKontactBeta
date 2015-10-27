@@ -13,6 +13,7 @@ struct ActivityKeys {
     static let ChooseCall = "com.humankontact.keyboardtest.ChooseCall"
     static let ChooseText = "com.humankontact.keyboardtest.ChooseText"
     static let ChooseEmail = "com.humankontact.keyboardtest.ChooseEmail"
+    static let ChoosePerson = "com.humankontact.keyboardtest.ChoosePerson"
     
     let ActivityItemsKey = "keyboardtest.items.key"
     let ActivityItemKey  = "keyboardtest.item.key"

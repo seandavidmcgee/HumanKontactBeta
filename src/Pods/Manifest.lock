@@ -1,31 +1,41 @@
 PODS:
-  - Alamofire (1.3.0)
-  - KGFloatingDrawer (0.1.3)
-  - PKHUD (2.0.1)
-  - Realm (0.94.0):
-    - Realm/Headers (= 0.94.0)
-  - Realm/Headers (0.94.0)
-  - RealmSwift (0.94.0):
-    - Realm (= 0.94.0)
-  - SwiftyJSON (2.2.1)
+  - ChameleonFramework/Default (2.0.4)
+  - ChameleonFramework/Swift (2.0.4):
+    - ChameleonFramework/Default
+  - Dollar (4.0.1)
+  - Google-Material-Design-Icons-Swift (1.0.1)
+  - Hokusai (0.1.19)
+  - LiquidLoader (0.1.1)
+  - LNRSimpleNotifications (0.2.2)
+  - Realm (0.95.3):
+    - Realm/Headers (= 0.95.3)
+  - Realm/Headers (0.95.3)
+  - RealmSwift (0.95.3):
+    - Realm (= 0.95.3)
+  - SwiftyUserDefaults (2.0.0)
+  - TKSubmitTransition (0.3)
 
 DEPENDENCIES:
-  - Alamofire (~> 1.3)
-  - KGFloatingDrawer (from `../`)
-  - PKHUD
-  - RealmSwift
-  - SwiftyJSON (~> 2.2.1)
-
-EXTERNAL SOURCES:
-  KGFloatingDrawer:
-    :path: ../
+  - ChameleonFramework/Swift
+  - Dollar
+  - Google-Material-Design-Icons-Swift (~> 1.0.1)
+  - Hokusai
+  - LiquidLoader
+  - LNRSimpleNotifications
+  - RealmSwift (~> 0.95.1)
+  - SwiftyUserDefaults
+  - TKSubmitTransition
 
 SPEC CHECKSUMS:
-  Alamofire: 220403a8d5840e0b4c946a6fbaf209dbca124282
-  KGFloatingDrawer: 159abb66ba8fe4fc10e15dbb7e9fbb394b4a78fa
-  PKHUD: a35d89fd82d0aeb67f53de086b3029aea3423b74
-  Realm: a046149653e0ca220b65b5783da907aa5b74d86c
-  RealmSwift: 5efbbf1a5c179a7237e4d428594e41619fa167ba
-  SwiftyJSON: ae2d0a3d68025d136602a33c4ee215091ced3e33
+  ChameleonFramework: 5abe69b1f2a6cc79c3c435fcd9d3d855748225ee
+  Dollar: a058e2659e0d3261307c12630dbc2fd8e32f80bf
+  Google-Material-Design-Icons-Swift: ff587db57d713061f66b8457229d1af2cae84c56
+  Hokusai: 2b3a0c31bb2b1c2dbc9f39f2e94294697d69f8f2
+  LiquidLoader: cf49954a6643f610c06a7db45da2da81a68a154b
+  LNRSimpleNotifications: dd922af3af5fd9eda149d74773586b0543025b5a
+  Realm: 55885fa05865344994ad8b56da96669ffa39fbf1
+  RealmSwift: 586df4b5a6d01473d2653b16e9fe7debce4a87ed
+  SwiftyUserDefaults: 1266e9734c68bcfbac8294ee84173dc8ba6db312
+  TKSubmitTransition: 6634e4fb07288db861b66d70fa4c4a7b96d0e6b2
 
-COCOAPODS: 0.38.2
+COCOAPODS: 0.39.0.beta.5

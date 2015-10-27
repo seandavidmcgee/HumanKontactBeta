@@ -1,9 +1,10 @@
 CLANG_CXX_LANGUAGE_STANDARD = compiler-default
+EMBEDDED_CONTENT_CONTAINS_SWIFT = YES
 GCC_PREPROCESSOR_DEFINITIONS = $(inherited) COCOAPODS=1
 LD_RUNPATH_SEARCH_PATHS = $(inherited) '@executable_path/Frameworks' '@loader_path/Frameworks'
-OTHER_CFLAGS = $(inherited) -iquote "$CONFIGURATION_BUILD_DIR/Alamofire.framework/Headers" -iquote "$CONFIGURATION_BUILD_DIR/KGFloatingDrawer.framework/Headers" -iquote "$CONFIGURATION_BUILD_DIR/PKHUD.framework/Headers" -iquote "$CONFIGURATION_BUILD_DIR/Realm.framework/Headers" -iquote "$CONFIGURATION_BUILD_DIR/RealmSwift.framework/Headers" -iquote "$CONFIGURATION_BUILD_DIR/SwiftyJSON.framework/Headers"
+OTHER_CFLAGS = $(inherited) -iquote "$CONFIGURATION_BUILD_DIR/ChameleonFramework.framework/Headers" -iquote "$CONFIGURATION_BUILD_DIR/Dollar.framework/Headers" -iquote "$CONFIGURATION_BUILD_DIR/Google_Material_Design_Icons_Swift.framework/Headers" -iquote "$CONFIGURATION_BUILD_DIR/Hokusai.framework/Headers" -iquote "$CONFIGURATION_BUILD_DIR/LNRSimpleNotifications.framework/Headers" -iquote "$CONFIGURATION_BUILD_DIR/LiquidLoader.framework/Headers" -iquote "$CONFIGURATION_BUILD_DIR/Realm.framework/Headers" -iquote "$CONFIGURATION_BUILD_DIR/RealmSwift.framework/Headers" -iquote "$CONFIGURATION_BUILD_DIR/SwiftyUserDefaults.framework/Headers" -iquote "$CONFIGURATION_BUILD_DIR/TKSubmitTransition.framework/Headers"
 OTHER_CPLUSPLUSFLAGS = -std=c++1y $(inherited)
-OTHER_LDFLAGS = $(inherited) -ObjC -framework "Alamofire" -framework "KGFloatingDrawer" -framework "PKHUD" -framework "Realm" -framework "RealmSwift" -framework "SwiftyJSON"
+OTHER_LDFLAGS = $(inherited) -ObjC -framework "ChameleonFramework" -framework "Dollar" -framework "Google_Material_Design_Icons_Swift" -framework "Hokusai" -framework "LNRSimpleNotifications" -framework "LiquidLoader" -framework "Realm" -framework "RealmSwift" -framework "SwiftyUserDefaults" -framework "TKSubmitTransition"
 OTHER_SWIFT_FLAGS = $(inherited) "-D" "COCOAPODS"
 PODS_FRAMEWORK_BUILD_PATH = $(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/Pods-keyboardTest
 PODS_ROOT = ${SRCROOT}/Pods

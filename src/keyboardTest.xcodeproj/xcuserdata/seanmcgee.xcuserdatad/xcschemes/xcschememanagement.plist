@@ -4,20 +4,25 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
-		<key>Glance - HumanKontact WatchKit App.xcscheme</key>
+		<key>Complication - HumanKontact.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>8</integer>
+			<integer>4</integer>
 		</dict>
-		<key>HumanKontact WatchKit App.xcscheme</key>
+		<key>Glance - HumanKontact.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>6</integer>
+			<integer>3</integer>
 		</dict>
-		<key>Notification - HumanKontact WatchKit App.xcscheme</key>
+		<key>HumanKontact.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>7</integer>
+			<integer>1</integer>
+		</dict>
+		<key>Notification - HumanKontact.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>2</integer>
 		</dict>
 		<key>keyboardTest.xcscheme</key>
 		<dict>
@@ -27,7 +32,22 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
+		<key>7500075E1BC3253F00F591D3</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 		<key>75D8C35A1B42D26700EA3137</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>75EB47431BC2D76600A0F755</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>75EB474F1BC2D76600A0F755</key>
 		<dict>
 			<key>primary</key>
 			<true/>

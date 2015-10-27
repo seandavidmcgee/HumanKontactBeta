@@ -8,7 +8,8 @@
 
 import Foundation
 import UIKit
-
+import Hokusai
+import RealmSwift
 @objc protocol SwiftPromptsProtocol
 {
     optional func clickedOnTheMainButton()
@@ -18,15 +19,7 @@ import UIKit
 }
 
 extension String {
-    /// Truncates the string to length number of characters and
-    /// appends optional trailing string if longer
-    func truncate(length: Int, trailing: String? = nil) -> String {
-        if count(self) > length {
-            return self.substringToIndex(advance(self.startIndex, length)) + (trailing ?? "")
-        } else {
-            return self
-        }
-    }
+    
 }
 
 class SwiftPromptsView: UIView
@@ -81,32 +74,18 @@ class SwiftPromptsView: UIView
     
     //Profile action buttons
     var person: HKPerson! = nil
-    var homeCallImage = UIImage(named: "CallHome") as UIImage?
-    var homeCallButton = UIButton()
-    var enableHomeButton : Bool = false
-    var workCallImage = UIImage(named: "CallWork") as UIImage?
-    var workCallButton = UIButton()
-    var enableWorkButton : Bool = false
-    var iPhoneCallImage = UIImage(named: "CalliPhone") as UIImage?
-    var iPhoneCallButton = UIButton()
-    var enableiPhoneButton : Bool = false
-    var mobileCallImage = UIImage(named: "CallMobile") as UIImage?
-    var mobileCallButton = UIButton()
-    var enableMobileButton : Bool = false
-    var messageImage = UIImage(named: "Messaging") as UIImage?
+    var callImage = UIImage(named: "Call") as UIImage?
+    var callButton = UIButton()
+    var enableCallButton : Bool = false
+    var messageImage = UIImage(named: "Message") as UIImage?
     var messageButton = UIButton()
-    var iPhoneMessageImage = UIImage(named: "MessagingiPhone") as UIImage?
-    var iPhoneMessageButton = UIButton()
+    var enableMessageButton : Bool = false
     var emailImage = UIImage(named: "Email") as UIImage?
     var emailButton = UIButton()
     var enableEmailButton : Bool = false
-    var secondEmailButton = UIButton()
-    var enableSecondEmailButton : Bool = false
     
-    var mobileIncluded: Bool = false
-    var workIncluded: Bool = false
-    var homeIncluded: Bool = false
-    var iPhoneIncluded: Bool = false
+    var callIncluded: Bool = false
+    var messageIncluded: Bool = false
     var emailIncluded: Bool = false
     
     //Gesture enabling
@@ -125,7 +104,7 @@ class SwiftPromptsView: UIView
     //Construct the prompt by overriding the view's drawRect
     override func drawRect(rect: CGRect)
     {
-        var backgroundImage : UIImage = snapshot(self.superview)
+        let backgroundImage : UIImage = self.superview!.snapshot(self.superview)
         var effectImage : UIImage!
         var transparencyAndColorImageView : UIImageView!
         
@@ -135,7 +114,7 @@ class SwiftPromptsView: UIView
         case .LeveledBlurredWithTransparencyView:
             if (enableBlurring) {
                 effectImage = backgroundImage.applyBlurWithRadius(blurringLevel, tintColor: nil, saturationDeltaFactor: 1.0, maskImage: nil)
-                var blurredImageView = UIImageView(image: effectImage)
+                let blurredImageView = UIImageView(image: effectImage)
                 self.addSubview(blurredImageView)
             }
             if (enableTransparencyWithColor) {
@@ -145,23 +124,23 @@ class SwiftPromptsView: UIView
             }
         case .LightBlurredEffect:
             effectImage = backgroundImage.applyLightEffect()
-            var lightEffectImageView = UIImageView(image: effectImage)
+            let lightEffectImageView = UIImageView(image: effectImage)
             self.addSubview(lightEffectImageView)
             
         case .ExtraLightBlurredEffect:
             effectImage = backgroundImage.applyExtraLightEffect()
-            var extraLightEffectImageView = UIImageView(image: effectImage)
+            let extraLightEffectImageView = UIImageView(image: effectImage)
             self.addSubview(extraLightEffectImageView)
             
         case .DarkBlurredEffect:
             effectImage = backgroundImage.applyDarkEffect()
-            var darkEffectImageView = UIImageView(image: effectImage)
+            let darkEffectImageView = UIImageView(image: effectImage)
             self.addSubview(darkEffectImageView)
         }
         
         //Create the prompt and assign its size and position
-        var promptSize = CGRect(x: 0, y: 0, width: promptWidth, height: promptHeight)
-        var swiftPrompt = PromptBoxView(master: self)
+        _ = CGRect(x: 0, y: 0, width: promptWidth, height: promptHeight)
+        let swiftPrompt = PromptBoxView(master: self)
         swiftPrompt.backgroundColor = UIColor.clearColor()
         swiftPrompt.tag = 99
         swiftPrompt.center = CGPointMake(self.center.x, self.center.y)
@@ -170,7 +149,7 @@ class SwiftPromptsView: UIView
         //Add the button(s) on the bottom of the prompt
         if (enableDoubleButtons == false)
         {
-            let button = UIButton.buttonWithType(UIButtonType.System) as! UIButton
+            let button = UIButton(type: .System)
             button.frame = CGRectMake(0, promptHeight-52, promptWidth, 41)
             button.setTitleColor(mainButtonColor, forState: .Normal)
             button.titleLabel!.font = UIFont(name: "HelveticaNeue-Light", size: 20)
@@ -183,13 +162,13 @@ class SwiftPromptsView: UIView
         else
         {
             if (promptButtonDividerVisibility) {
-                var divider = UIView(frame: CGRectMake(promptWidth/2, promptHeight-47, 0.5, 31))
+                let divider = UIView(frame: CGRectMake(promptWidth/2, promptHeight-47, 0.5, 31))
                 divider.backgroundColor = promptButtonDividerColor
                 
                 swiftPrompt.addSubview(divider)
             }
             
-            let button = UIButton.buttonWithType(UIButtonType.System) as! UIButton
+            let button = UIButton(type: .System)
             button.frame = CGRectMake(promptWidth/2, promptHeight-52, promptWidth/2, 41)
             button.setTitleColor(mainButtonColor, forState: .Normal)
             button.titleLabel!.font = UIFont(name: "HelveticaNeue-Light", size: 20)
@@ -199,7 +178,7 @@ class SwiftPromptsView: UIView
             
             swiftPrompt.addSubview(button)
             
-            let secondButton = UIButton.buttonWithType(UIButtonType.System) as! UIButton
+            let secondButton = UIButton(type: .System)
             secondButton.frame = CGRectMake(0, promptHeight-52, promptWidth/2, 41)
             secondButton.setTitleColor(secondButtonColor, forState: .Normal)
             secondButton.titleLabel!.font = UIFont(name: "HelveticaNeue-Light", size: 20)
@@ -208,60 +187,18 @@ class SwiftPromptsView: UIView
             secondButton.addTarget(self, action: "panelButtonAction:", forControlEvents: UIControlEvents.TouchUpInside)
             
             swiftPrompt.addSubview(secondButton)
-            if (enableiPhoneButton == true) {
-                homeCallButton.frame = CGRectMake(15, promptHeight/2.25, 50, 50)
-                homeCallButton.setImage(homeCallImage, forState: .Normal)
-                homeCallButton.layer.cornerRadius = homeCallButton.frame.width / 2.0
-                homeCallButton.contentMode = UIViewContentMode.ScaleAspectFit
-                homeCallButton.setTitleColor(UIColor.clearColor(), forState: UIControlState.Normal)
-                homeCallButton.tag = 85
-                homeCallButton.addTarget(self, action: "didPressButton:", forControlEvents: .TouchUpInside)
+            if (enableCallButton == true) {
+                callButton.frame = CGRectMake(15, promptHeight/2.25, 50, 50)
+                callButton.setImage(callImage, forState: .Normal)
+                callButton.layer.cornerRadius = callButton.frame.width / 2.0
+                callButton.contentMode = UIViewContentMode.ScaleAspectFit
+                callButton.setTitleColor(UIColor.clearColor(), forState: UIControlState.Normal)
+                callButton.tag = 87
+                callButton.addTarget(self, action: "didPressButton:", forControlEvents: .TouchUpInside)
             
-                swiftPrompt.addSubview(homeCallButton)
+                swiftPrompt.addSubview(callButton)
             }
-            if (enableWorkButton == true) {
-                workCallButton.frame = CGRectMake(15, promptHeight/2.25, 50, 50)
-                workCallButton.setImage(workCallImage, forState: .Normal)
-                workCallButton.layer.cornerRadius = homeCallButton.frame.width / 2.0
-                workCallButton.contentMode = UIViewContentMode.ScaleAspectFit
-                workCallButton.setTitleColor(UIColor.clearColor(), forState: UIControlState.Normal)
-                workCallButton.tag = 86
-                workCallButton.addTarget(self, action: "didPressButton:", forControlEvents: .TouchUpInside)
-            
-                swiftPrompt.addSubview(workCallButton)
-            }
-            if (enableiPhoneButton == true) {
-                iPhoneCallButton.frame = CGRectMake(15, promptHeight/2.25, 50, 50)
-                iPhoneCallButton.setImage(iPhoneCallImage, forState: .Normal)
-                iPhoneCallButton.layer.cornerRadius = iPhoneCallButton.frame.width / 2.0
-                iPhoneCallButton.contentMode = UIViewContentMode.ScaleAspectFit
-                iPhoneCallButton.setTitleColor(UIColor.clearColor(), forState: UIControlState.Normal)
-                iPhoneCallButton.tag = 87
-                iPhoneCallButton.addTarget(self, action: "didPressButton:", forControlEvents: .TouchUpInside)
-            
-                swiftPrompt.addSubview(iPhoneCallButton)
-            
-                iPhoneMessageButton.frame = CGRectMake(promptWidth/2 - 25, promptHeight/2.25, 50, 50)
-                iPhoneMessageButton.setImage(iPhoneMessageImage, forState: .Normal)
-                iPhoneMessageButton.layer.cornerRadius = messageButton.frame.width / 2.0
-                iPhoneMessageButton.contentMode = UIViewContentMode.ScaleAspectFit
-                iPhoneMessageButton.setTitleColor(UIColor.clearColor(), forState: UIControlState.Normal)
-                iPhoneMessageButton.tag = 88
-                iPhoneMessageButton.addTarget(self, action: "didPressButton:", forControlEvents: .TouchUpInside)
-            
-                swiftPrompt.addSubview(iPhoneMessageButton)
-            }
-            if (enableMobileButton == true) {
-                mobileCallButton.frame = CGRectMake(15, promptHeight/2.25, 50, 50)
-                mobileCallButton.setImage(mobileCallImage, forState: .Normal)
-                mobileCallButton.layer.cornerRadius = mobileCallButton.frame.width / 2.0
-                mobileCallButton.contentMode = UIViewContentMode.ScaleAspectFit
-                mobileCallButton.setTitleColor(UIColor.clearColor(), forState: UIControlState.Normal)
-                mobileCallButton.tag = 87
-                mobileCallButton.addTarget(self, action: "didPressButton:", forControlEvents: .TouchUpInside)
-            
-                swiftPrompt.addSubview(mobileCallButton)
-            
+            if (enableMessageButton == true) {
                 messageButton.frame = CGRectMake(promptWidth/2 - 25, promptHeight/2.25, 50, 50)
                 messageButton.setImage(messageImage, forState: .Normal)
                 messageButton.layer.cornerRadius = messageButton.frame.width / 2.0
@@ -273,8 +210,11 @@ class SwiftPromptsView: UIView
                 swiftPrompt.addSubview(messageButton)
             }
             if (enableEmailButton == true) {
-                if (!enableMobileButton && !enableiPhoneButton && !enableWorkButton && !enableHomeButton) {
+                if (!enableCallButton && !enableMessageButton) {
                     emailButton.frame = CGRectMake(15, promptHeight/2.25, 50, 50)
+                }
+                else if (enableCallButton && !enableMessageButton) {
+                    emailButton.frame = CGRectMake(promptWidth/2 - 25, promptHeight/2.25, 50, 50)
                 }
                 else {
                     emailButton.frame = CGRectMake(promptWidth-65, promptHeight/2.25, 50, 50)
@@ -288,27 +228,12 @@ class SwiftPromptsView: UIView
             
                 swiftPrompt.addSubview(emailButton)
             }
-            if (enableSecondEmailButton == true) {
-                if ((enableMobileButton && enableiPhoneButton && enableWorkButton && enableHomeButton) == false) {
-                    secondEmailButton.frame = CGRectMake(promptWidth/2 - 25, promptHeight/2.25, 50, 50)
-                } else {
-                    secondEmailButton.frame = CGRectMake(promptWidth-15, promptHeight/2.25, 50, 50)
-                }
-                secondEmailButton.setImage(emailImage, forState: .Normal)
-                secondEmailButton.layer.cornerRadius = secondEmailButton.frame.width / 2.0
-                secondEmailButton.contentMode = UIViewContentMode.ScaleAspectFit
-                secondEmailButton.setTitleColor(UIColor.clearColor(), forState: UIControlState.Normal)
-                secondEmailButton.tag = 89
-                secondEmailButton.addTarget(self, action: "didPressButton:", forControlEvents: .TouchUpInside)
-                
-                swiftPrompt.addSubview(secondEmailButton)
-            }
         }
         
         //Add the top dismiss button if enabled
         if (promptDismissIconVisibility)
         {
-            let dismissButton = UIButton.buttonWithType(UIButtonType.System) as! UIButton
+            let dismissButton = UIButton(type: .System)
             dismissButton.frame = CGRectMake(5, 17, 35, 35)
             dismissButton.addTarget(self, action: "dismissPrompt", forControlEvents: UIControlEvents.TouchUpInside)
             
@@ -327,11 +252,14 @@ class SwiftPromptsView: UIView
         
         if (promptHeaderTxtTruncate)
         {
-            promtHeader = promtHeader.truncate(17, trailing: "...")
+            if promtHeader.characters.count > 17 {
+                let index = promtHeader.startIndex.advancedBy(17)
+                promtHeader = promtHeader.substringToIndex(index) + "..."
+            }
         }
         
         //Apply animation effect to present this view
-        var applicationLoadViewIn = CATransition()
+        let applicationLoadViewIn = CATransition()
         applicationLoadViewIn.duration = 0.4
         applicationLoadViewIn.type = kCATransitionReveal
         applicationLoadViewIn.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseIn)
@@ -356,15 +284,6 @@ class SwiftPromptsView: UIView
     }
     
     // MARK: - Helper Functions
-    func snapshot(view: UIView!) -> UIImage!
-    {
-        UIGraphicsBeginImageContextWithOptions(view.bounds.size, true, 0)
-        view.drawViewHierarchyInRect(view.bounds, afterScreenUpdates: true)
-        var image : UIImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext();
-        
-        return image;
-    }
     
     func dismissPrompt()
     {
@@ -378,28 +297,142 @@ class SwiftPromptsView: UIView
     }
     
     func didPressButton(button:UIButton) {
-        var infoToSend: String! = button.titleLabel!.text!
-        recentPeople.append(person)
+        print(button.titleLabel!.text!)
+        let infoToSend: String! = button.titleLabel!.text!
         if (infoToSend != nil) {
             if (button.tag == 85 || button.tag == 86 || button.tag == 87) {
-                callNumber(infoToSend)
+                callActionSheet(infoToSend)
             }
             if (button.tag == 88) {
-                textNumber(infoToSend)
+                messageActionSheet(infoToSend)
             }
             if (button.tag == 89) {
-                emailPressed(infoToSend)
+                emailActionSheet(infoToSend)
             }
         } else {
             return
         }
     }
     
+    func callActionSheet(callUser: String) {
+        let hokusai = Hokusai()
+        var hkPerson = try! Realm().objectForPrimaryKey(HKPerson.self, key: callUser)
+        var numbersToSelect = hkPerson!.phoneNumbers
+        
+        for number in numbersToSelect {
+            // Add a button with a closure
+            hokusai.addButton("\(number.label) : \(number.formattedNumber)") {
+                self.callNumber(number.formattedNumber)
+            }
+        }
+        
+        // Add a button with a selector
+        //hokusai.addButton("\(emailToSelect)", target: self, selector: Selector("button2Pressed"))
+        
+        // Set a font name. AvenirNext-DemiBold is the default. (Optional)
+        hokusai.fontName = "HelveticaNeue-Light"
+        
+        // Select a color scheme. Just below you can see the dafault sets of schemes. (Optional)
+        hokusai.colorScheme = HOKColorScheme.Karasu
+        
+        // Show Hokusai
+        hokusai.show()
+        
+        // Selector for button 2
+        func button2Pressed() {
+            print("Oribe")
+        }
+        
+        // Change a title for cancel button. Default is Cancel. (Optional)
+        hokusai.cancelButtonTitle = "Done"
+        
+        // Add a callback for cancel button (Optional)
+        hokusai.cancelButtonAction = {
+            print("canceled")
+        }
+    }
+    
+    func messageActionSheet(messageUser: String) {
+        let hokusai = Hokusai()
+        var hkPerson = try! Realm().objectForPrimaryKey(HKPerson.self, key: messageUser)
+        var numbersToSelect = hkPerson!.phoneNumbers
+        
+        for number in numbersToSelect {
+            // Add a button with a closure
+            hokusai.addButton("\(number.label) : \(number.formattedNumber)") {
+                self.textNumber(number.formattedNumber)
+            }
+        }
+        
+        // Add a button with a selector
+        //hokusai.addButton("\(emailToSelect)", target: self, selector: Selector("button2Pressed"))
+        
+        // Set a font name. AvenirNext-DemiBold is the default. (Optional)
+        hokusai.fontName = "HelveticaNeue-Light"
+        
+        // Select a color scheme. Just below you can see the dafault sets of schemes. (Optional)
+        hokusai.colorScheme = HOKColorScheme.Karasu
+        
+        // Show Hokusai
+        hokusai.show()
+        
+        // Selector for button 2
+        func button2Pressed() {
+            print("Oribe")
+        }
+        
+        // Change a title for cancel button. Default is Cancel. (Optional)
+        hokusai.cancelButtonTitle = "Done"
+        
+        // Add a callback for cancel button (Optional)
+        hokusai.cancelButtonAction = {
+            print("cancelled")
+        }
+    }
+    
+    func emailActionSheet(emailUser: String) {
+        let hokusai = Hokusai()
+        var hkPerson = try! Realm().objectForPrimaryKey(HKPerson.self, key: emailUser)
+        var emailsToSelect = hkPerson!.emails
+        
+        for email in emailsToSelect {
+            // Add a button with a closure
+            hokusai.addButton("\(email.email)") {
+                self.emailPressed(email.email)
+            }
+        }
+        
+        // Add a button with a selector
+        //hokusai.addButton("\(emailToSelect)", target: self, selector: Selector("button2Pressed"))
+        
+        // Set a font name. AvenirNext-DemiBold is the default. (Optional)
+        hokusai.fontName = "HelveticaNeue-Light"
+        
+        // Select a color scheme. Just below you can see the dafault sets of schemes. (Optional)
+        hokusai.colorScheme = HOKColorScheme.Karasu
+        
+        // Show Hokusai
+        hokusai.show()
+        
+        // Selector for button 2
+        func button2Pressed() {
+            print("Oribe")
+        }
+        
+        // Change a title for cancel button. Default is Cancel. (Optional)
+        hokusai.cancelButtonTitle = "Done"
+        
+        // Add a callback for cancel button (Optional)
+        hokusai.cancelButtonAction = {
+            print("canceled")
+        }
+    }
+    
     private func callNumber(phoneNumber:String) {
-        var strippedPhoneNumber = phoneNumber.stringByReplacingOccurrencesOfString("[^0-9 ]", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range:nil);
+        let strippedPhoneNumber = phoneNumber.stringByReplacingOccurrencesOfString("[^0-9 ]", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range:nil);
         var cleanNumber = strippedPhoneNumber.removeWhitespace()
-        cleanNumber.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
-        if (count(cleanNumber.utf16) > 1){
+        cleanNumber = cleanNumber.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
+        if (cleanNumber.utf16.count > 1){
             if let phoneCallURL:NSURL = NSURL(string: "tel://\(cleanNumber)") {
                 let application:UIApplication = UIApplication.sharedApplication()
                 if (application.canOpenURL(phoneCallURL)) {
@@ -407,19 +440,21 @@ class SwiftPromptsView: UIView
                 }
             }
         } else {
-            let alert = UIAlertView()
+            let alert = UIAlertController()
             alert.title = "Sorry!"
             alert.message = "Phone number is not available."
-            alert.addButtonWithTitle("Ok")
-            alert.show()
+            let okAction = UIAlertAction(title:  NSLocalizedString("Ok", comment: ""), style: .Default) { (action) in
+            }
+            alert.addAction(okAction)
+            window!.rootViewController!.presentViewController(alert, animated: true, completion: nil)
         }
     }
     
     private func textNumber(phoneNumber:String) {
-        var strippedPhoneNumber = phoneNumber.stringByReplacingOccurrencesOfString("[^0-9 ]", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range:nil);
+        let strippedPhoneNumber = phoneNumber.stringByReplacingOccurrencesOfString("[^0-9 ]", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range:nil);
         var cleanNumber = strippedPhoneNumber.removeWhitespace()
-        cleanNumber.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
-        if (count(cleanNumber.utf16) > 1){
+        cleanNumber = cleanNumber.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
+        if (cleanNumber.utf16.count > 1){
             if let textMessageURL:NSURL = NSURL(string: "sms://\(cleanNumber)") {
                 let application:UIApplication = UIApplication.sharedApplication()
                 if (application.canOpenURL(textMessageURL)) {
@@ -427,11 +462,13 @@ class SwiftPromptsView: UIView
                 }
             }
         } else {
-            let alert = UIAlertView()
+            let alert = UIAlertController()
             alert.title = "Sorry!"
-            alert.message = "Phone number is not available for text messaging."
-            alert.addButtonWithTitle("Ok")
-            alert.show()
+            alert.message = "Phone number is not available."
+            let okAction = UIAlertAction(title:  NSLocalizedString("Ok", comment: ""), style: .Default) { (action) in
+            }
+            alert.addAction(okAction)
+            window!.rootViewController!.presentViewController(alert, animated: true, completion: nil)
         }
     }
     
@@ -477,12 +514,9 @@ class SwiftPromptsView: UIView
     func setPromptTopLineColor (topLineColor : UIColor) { promptTopLineColor = topLineColor }
     func setPromptBottomLineColor (bottomLineColor : UIColor) { promptBottomLineColor = bottomLineColor }
     func enableDoubleButtonsOnPrompt () { enableDoubleButtons = true }
-    func enableHomeButtonOnPrompt () { enableHomeButton = true }
-    func enableWorkButtonOnPrompt () { enableWorkButton = true }
-    func enableiPhoneButtonOnPrompt () { enableiPhoneButton = true }
-    func enableMobileButtonOnPrompt () { enableMobileButton = true }
+    func enableCallButtonOnPrompt () { enableCallButton = true }
+    func enableMessageButtonOnPrompt () { enableMessageButton = true }
     func enableEmailButtonOnPrompt () { enableEmailButton = true }
-    func enableSecondEmailButtonOnPrompt () { enableSecondEmailButton = true }
     func setMainButtonText (buttonTitle : String) { mainButtonText = buttonTitle }
     func setSecondButtonText (secondButtonTitle : String) { secondButtonText = secondButtonTitle }
     func setMainButtonColor (colorForButton : UIColor) { mainButtonColor = colorForButton }
@@ -508,12 +542,12 @@ class SwiftPromptsView: UIView
         {
             //Create a link to the parent class to access its vars and init with the prompts size
             masterClass = master
-            var promptSize = CGRect(x: 0, y: 0, width: masterClass.promptWidth, height: masterClass.promptHeight)
+            let promptSize = CGRect(x: 0, y: 0, width: masterClass.promptWidth, height: masterClass.promptHeight)
             super.init(frame: promptSize)
             
             // Initialize Gesture Recognizer
             if (masterClass.enablePromptGestures) {
-                var panRecognizer = UIPanGestureRecognizer(target:self, action:"detectPan:")
+                let panRecognizer = UIPanGestureRecognizer(target:self, action:"detectPan:")
                 self.gestureRecognizers = [panRecognizer]
             }
         }
@@ -531,16 +565,16 @@ class SwiftPromptsView: UIView
         
         func detectPan(recognizer:UIPanGestureRecognizer)
         {
-            var translation  = recognizer.translationInView(self)
+            let translation  = recognizer.translationInView(self)
             self.center = CGPointMake(lastLocation.x + translation.x, lastLocation.y + translation.y)
             
-            var verticalDistanceFromCenter : CGFloat = fabs(translation.y)
-            var horizontalDistanceFromCenter : CGFloat = fabs(translation.x)
+            let verticalDistanceFromCenter : CGFloat = fabs(translation.y)
+            //var horizontalDistanceFromCenter : CGFloat = fabs(translation.x)
             var shouldDismissPrompt : Bool = false
             
             //Dim the prompt accordingly to the specified radius
             if (verticalDistanceFromCenter < 100.0) {
-                var radiusAlphaLevel : CGFloat = 1.0 - verticalDistanceFromCenter/100
+                let radiusAlphaLevel : CGFloat = 1.0 - verticalDistanceFromCenter/100
                 self.alpha = radiusAlphaLevel
                 //self.superview!.alpha = radiusAlphaLevel
                 shouldDismissPrompt = false
@@ -574,10 +608,10 @@ class SwiftPromptsView: UIView
             }
         }
         
-        override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent)
-        {
+        //override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent)
+        //{
             // Remember original location
-            lastLocation = self.center
-        }
+            //lastLocation = self.center
+        //}
     }
 }

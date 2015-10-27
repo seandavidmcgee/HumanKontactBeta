@@ -14,31 +14,35 @@ var entrySoFar : String? = nil
 var nameSearch = UITextField()
 
 class KeyboardViewController: UIViewController, UITextFieldDelegate {
-    
     var buttonsArray: Array<UIButton> = []
     var buttonsBlurArray = [AnyObject]()
-    var buttonXFirst: CGFloat = 250
-    var buttonXSecond: CGFloat = 250
-    var buttonXThird: CGFloat = 250
     var keyPresses: Int = 1
     var deleteInput: UIButton!
     var clearSearch: UIButton!
     var moreOptionsForward: UIButton! = UIButton()
     var moreOptionsBack: UIButton! = UIButton()
     var altKeyboard: UIButton! = UIButton()
-    var textFieldInsideSearchBar = contactsSearchController.searchBar.valueForKey("searchField") as? UITextField
-    var optionsControl: Bool! = false
+    var optionsControl: Bool = false
     var moreKeyPresses: Int = 0
     var firstRowKeyStrings = ""
     var secondRowKeyStrings = ""
     var lastRowKeyStrings = ""
+    var buttonXFirst: CGFloat!
+    var buttonXSecond: CGFloat!
+    var buttonXThird: CGFloat!
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
+        self.keyboardOrient()
+        if GlobalVariables.sharedManager.keyboardFirst {
+            self.populateKeys()
+            GlobalVariables.sharedManager.keyboardFirst = false
+        }
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        keyboardOrient()
         createKeyboard()
         dismissKeyboard()
         deleteBtn()
@@ -50,15 +54,35 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
         // Dispose of any resources that can be recreated.
     }
     
+    func keyboardOrient() {
+        if leftHanded == false {
+            buttonXFirst = 250
+            buttonXSecond = 250
+            buttonXThird = 250
+        } else if leftHanded == true {
+            buttonXFirst = 365
+            buttonXSecond = 365
+            buttonXThird = 365
+        } else {
+            buttonXFirst = 250
+            buttonXSecond = 250
+            buttonXThird = 250
+        }
+    }
+    
+    private class var indexFile : String {
+        print("index file path")
+        let directory: NSURL = NSFileManager.defaultManager().containerURLForSecurityApplicationGroupIdentifier("group.com.kannuu.humankontact")!
+        let hkIndexPath = directory.path!.stringByAppendingPathComponent("HKIndex")
+        return hkIndexPath
+    }
+    
     func refreshData() {
         dispatch_async(dispatch_get_main_queue()) {
-            self.optionsControl == false
-            if var indexController = lookupController {
-                myResults.removeAll(keepCapacity: false)
-                objectKeys.removeAll(keepCapacity: false)
-                objectKeys = indexController.options!
-                var selections = indexController.branchSelecions!
-                myResults += selections
+            self.optionsControl = false
+            if let indexController = Lookup.lookupController {
+                GlobalVariables.sharedManager.objectKeys.removeAll(keepCapacity: false)
+                GlobalVariables.sharedManager.objectKeys = indexController.options!
                 entrySoFar = indexController.entrySoFar!
                 nameSearch.text = entrySoFar?.capitalizedString
                 contactsSearchController.searchBar.text = entrySoFar?.capitalizedString
@@ -73,20 +97,31 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
                     if (self.keyPresses > 1 && indexController.optionCount == 9) {
                         self.moreOptionsBack.hidden = true
                     }
+                    if self.moreKeyPresses == 1 {
+                        self.moreOptionsBack.hidden = false
+                    }
                     self.moreOptionsForward.hidden = false
                 }
                 else if (self.optionsControl == false && indexController.complete == true) {
                     self.moreOptionsForward.hidden = true
                     self.moreOptionsBack.hidden = true
-                    self.view.hidden = true
                 }
                 else if (self.optionsControl == false && self.moreKeyPresses != 2) {
-                    self.moreOptionsForward.hidden = true
-                    self.moreOptionsBack.hidden = true
+                    if self.keyPresses > 1 && self.moreKeyPresses == 1 {
+                        self.moreOptionsForward.hidden = true
+                        self.moreOptionsBack.hidden = false
+                    } else {
+                        self.moreOptionsForward.hidden = true
+                        self.moreOptionsBack.hidden = true
+                    }
                 }
                 else if (self.optionsControl == false && self.moreKeyPresses == 2) {
-                    self.moreKeyPresses = 0
-                    self.moreOptionsForward.hidden = true
+                    if self.keyPresses > 1 {
+                        self.moreOptionsForward.hidden = true
+                        self.moreOptionsBack.hidden = true
+                    } else {
+                        self.moreOptionsForward.hidden = true
+                    }
                 }
             }
         }
@@ -94,22 +129,25 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
     
     func backToInitialView() {
         self.view.hidden = true
-        contactsSearchController.searchBar.text! = ""
+        if contactsSearchController.searchBar.text != nil {
+            contactsSearchController.searchBar.text = ""
+        }
         contactsSearchController.active = false
-        nameSearch.text! = ""
-        keyPresses == 1
-        if (lookupController!.atTop == false) {
-            lookupController?.restart()
+        if nameSearch.text != nil {
+            nameSearch.text = ""
+        }
+        keyPresses = 1
+        if (Lookup.lookupController?.atTop == false) {
+            Lookup.lookupController?.restart()
             self.refreshData()
-            var timer = NSTimer.scheduledTimerWithTimeInterval(0.1, target: self, selector: Selector("singleReset"), userInfo: nil, repeats: false)
+            _ = NSTimer.scheduledTimerWithTimeInterval(0.2, target: self, selector: Selector("singleReset"), userInfo: nil, repeats: false)
         }
     }
     
     func createKeyboard() {
-        self.view.backgroundColor = UIColor(white: 1.0, alpha: 1.0)
-        var BlurredKeyBG = UIImage(named: "BlurredKeyBG")
-        var BlurredKeyBGView = UIImageView(image: BlurredKeyBG)
-        BlurredKeyBGView.frame = view.frame
+        let BlurredKeyBG = UIImage(named: "BlurredKeyBG")
+        let BlurredKeyBGView = UIImageView(image: BlurredKeyBG)
+        BlurredKeyBGView.frame = self.view.frame
         BlurredKeyBGView.contentMode = UIViewContentMode.ScaleAspectFill
         BlurredKeyBGView.clipsToBounds = true
         
@@ -121,8 +159,8 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
         nameSearch.textColor = UIColor(white: 1.0, alpha: 1.0)
         nameSearch.layer.cornerRadius = 12
         let blur = UIBlurEffect(style: UIBlurEffectStyle.Light)
-        var vibrancy = UIVibrancyEffect(forBlurEffect: blur)
-        var blurView = UIVisualEffectView(effect: blur)
+        _ = UIVibrancyEffect(forBlurEffect: blur)
+        let blurView = UIVisualEffectView(effect: blur)
         blurView.frame = nameSearch.frame
         blurView.layer.cornerRadius = 12
         blurView.clipsToBounds = true
@@ -150,7 +188,7 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
     }
     
     func dismissKeyboard() {
-        var dismissKeyboard = UIButton(frame: CGRect(x: nameSearch.frame.width + 75, y: 20, width: 30, height: 30))
+        let dismissKeyboard = UIButton(frame: CGRect(x: nameSearch.frame.width + 75, y: 20, width: 30, height: 30))
         dismissKeyboard.setImage(UIImage(named: "KeyboardReverse"), forState: UIControlState.Normal)
         dismissKeyboard.imageEdgeInsets = UIEdgeInsetsMake(-10, -10, -10, -10)
         dismissKeyboard.addTarget(self, action: "backToInitialView", forControlEvents: UIControlEvents.TouchUpInside)
@@ -177,15 +215,15 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
     }
     
     func populateKeys() {
-        for index in 0..<objectKeys.count {
+        for index in 0..<GlobalVariables.sharedManager.objectKeys.count {
             if (index < 3) {
-                var keyButton1 = UIButton(frame: CGRect(x: self.view.frame.width - buttonXFirst, y: 75, width: 72, height: 52))
+                let keyButton1 = UIButton(frame: CGRect(x: self.view.frame.width - buttonXFirst, y: 75, width: 72, height: 52))
                 buttonXFirst = buttonXFirst - 82
                 
                 keyButton1.layer.cornerRadius = keyButton1.frame.width / 6.0
                 keyButton1.setTitleColor(UIColor.whiteColor(), forState: UIControlState.Normal)
                 keyButton1.backgroundColor = UIColor.clearColor()
-                firstRowKeyStrings = "\(objectKeys[index])"
+                firstRowKeyStrings = "\(GlobalVariables.sharedManager.objectKeys[index])"
                 keyButton1.setTitle(firstRowKeyStrings.capitalizedString, forState: UIControlState.Normal)
                 keyButton1.setTitleColor(UIColor(white: 0.0, alpha: 1.0 ), forState: UIControlState.Highlighted)
                 keyButton1.contentEdgeInsets = UIEdgeInsetsMake(0, 5, 0, 5)
@@ -194,8 +232,8 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
                 keyButton1.titleLabel!.text = firstRowKeyStrings.capitalizedString
                 keyButton1.tag = index
                 let blur = UIBlurEffect(style: UIBlurEffectStyle.Light)
-                var vibrancy = UIVibrancyEffect(forBlurEffect: blur)
-                var blurView = UIVisualEffectView(effect: blur)
+                _ = UIVibrancyEffect(forBlurEffect: blur)
+                let blurView = UIVisualEffectView(effect: blur)
                 blurView.frame = keyButton1.frame
                 blurView.layer.cornerRadius = keyButton1.frame.width / 6.0
                 blurView.clipsToBounds = true
@@ -210,13 +248,13 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
             }
             
             if (index < 6 && index >= 3) {
-                var keyButton2 = UIButton(frame: CGRect(x: self.view.frame.width - buttonXSecond, y: 137, width: 72, height: 52))
+                let keyButton2 = UIButton(frame: CGRect(x: self.view.frame.width - buttonXSecond, y: 137, width: 72, height: 52))
                 buttonXSecond = buttonXSecond - 82
                 
                 keyButton2.layer.cornerRadius = keyButton2.frame.width / 6.0
                 keyButton2.setTitleColor(UIColor.whiteColor(), forState: UIControlState.Normal)
                 keyButton2.backgroundColor = UIColor.clearColor()
-                secondRowKeyStrings = "\(objectKeys[index])"
+                secondRowKeyStrings = "\(GlobalVariables.sharedManager.objectKeys[index])"
                 keyButton2.setTitle(secondRowKeyStrings.capitalizedString, forState: UIControlState.Normal)
                 keyButton2.setTitleColor(UIColor(white: 0.0, alpha: 1.000 ), forState: UIControlState.Highlighted)
                 keyButton2.contentEdgeInsets = UIEdgeInsetsMake(0, 5, 0, 5)
@@ -225,8 +263,8 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
                 keyButton2.titleLabel!.text = secondRowKeyStrings.capitalizedString
                 keyButton2.tag = index
                 let blur = UIBlurEffect(style: UIBlurEffectStyle.Light)
-                var vibrancy = UIVibrancyEffect(forBlurEffect: blur)
-                var blurView = UIVisualEffectView(effect: blur)
+                _ = UIVibrancyEffect(forBlurEffect: blur)
+                let blurView = UIVisualEffectView(effect: blur)
                 blurView.frame = keyButton2.frame
                 blurView.layer.cornerRadius = keyButton2.frame.width / 6.0
                 blurView.clipsToBounds = true
@@ -241,13 +279,13 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
             }
             
             if (index < 9 && index >= 6) {
-                var keyButton3 = UIButton(frame: CGRect(x: self.view.frame.width - buttonXThird, y: 199, width: 72, height: 52))
+                let keyButton3 = UIButton(frame: CGRect(x: self.view.frame.width - buttonXThird, y: 199, width: 72, height: 52))
                 buttonXThird = buttonXThird - 82
                 
                 keyButton3.layer.cornerRadius = keyButton3.frame.width / 6.0
                 keyButton3.setTitleColor(UIColor.whiteColor(), forState: UIControlState.Normal)
                 keyButton3.backgroundColor = UIColor.clearColor()
-                lastRowKeyStrings = "\(objectKeys[index])"
+                lastRowKeyStrings = "\(GlobalVariables.sharedManager.objectKeys[index])"
                 keyButton3.setTitle(lastRowKeyStrings.capitalizedString, forState: UIControlState.Normal)
                 keyButton3.setTitleColor(UIColor(white: 0.0, alpha: 1.000 ), forState: UIControlState.Highlighted)
                 keyButton3.contentEdgeInsets = UIEdgeInsetsMake(0, 5, 0, 5)
@@ -256,8 +294,8 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
                 keyButton3.titleLabel!.text = lastRowKeyStrings.capitalizedString
                 keyButton3.tag = index
                 let blur = UIBlurEffect(style: UIBlurEffectStyle.Light)
-                var vibrancy = UIVibrancyEffect(forBlurEffect: blur)
-                var blurView = UIVisualEffectView(effect: blur)
+                _ = UIVibrancyEffect(forBlurEffect: blur)
+                let blurView = UIVisualEffectView(effect: blur)
                 blurView.frame = keyButton3.frame
                 blurView.layer.cornerRadius = keyButton3.frame.width / 6.0
                 blurView.clipsToBounds = true
@@ -293,61 +331,69 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
     }
     
     func keyPressed(sender: UIButton!) {
-        sender.backgroundColor = UIColor(white: 1.0, alpha: 1.0)
-        sender.setTitleColor(UIColor.blackColor(), forState: UIControlState.Normal)
-        lookupController?.selectOption(sender.tag)
+        Lookup.lookupController?.selectOption(sender.tag)
         self.refreshData()
         keyPresses++
+        moreKeyPresses = 0
     }
     
     func clearNameSearch() {
-        contactsSearchController.searchBar.text! = ""
-        nameSearch.text! = ""
-        keyPresses == 1
-        lookupController?.restart()
+        if contactsSearchController.searchBar.text != nil {
+            contactsSearchController.searchBar.text = ""
+        }
+        if nameSearch.text != nil {
+            nameSearch.text = ""
+        }
+        keyPresses = 1
+        optionsControl = false
+        moreKeyPresses = 0
+        Lookup.lookupController?.restart()
         self.refreshData()
         clearSearch.enabled = false
         deleteInput.enabled = false
-        var timer = NSTimer.scheduledTimerWithTimeInterval(0.1, target: self, selector: Selector("singleReset"), userInfo: nil, repeats: false)
+        _ = NSTimer.scheduledTimerWithTimeInterval(0.2, target: self, selector: Selector("singleReset"), userInfo: nil, repeats: false)
     }
     
     func deleteSearchInput(sender: UIButton!) {
         keyPresses--
         if (keyPresses > 1) {
-            lookupController?.back()
+            Lookup.lookupController?.back()
             self.refreshData()
-            var timer = NSTimer.scheduledTimerWithTimeInterval(0.1, target: self, selector: Selector("combinedReset"), userInfo: nil, repeats: false)
+            _ = NSTimer.scheduledTimerWithTimeInterval(0.2, target: self, selector: Selector("combinedReset"), userInfo: nil, repeats: false)
         }
         else {
-            lookupController?.restart()
+            Lookup.lookupController?.restart()
             self.refreshData()
             clearSearch.enabled = false
             deleteInput.enabled = false
-            var timer = NSTimer.scheduledTimerWithTimeInterval(0.1, target: self, selector: Selector("singleReset"), userInfo: nil, repeats: false)
+            optionsControl = false
+            moreKeyPresses = 0
+            _ = NSTimer.scheduledTimerWithTimeInterval(0.2, target: self, selector: Selector("singleReset"), userInfo: nil, repeats: false)
         }
     }
     
     func respondToMore(sender: UIButton!) {
         if (sender.tag == 998) {
-            lookupController?.back()
+            moreKeyPresses--
+            Lookup.lookupController?.back()
             self.refreshData()
             moreOptionsForward.hidden = false
-            var timer = NSTimer.scheduledTimerWithTimeInterval(0.1, target: self, selector: Selector("respondToBackRefresh"), userInfo: nil, repeats: false)
+            _ = NSTimer.scheduledTimerWithTimeInterval(0.2, target: self, selector: Selector("respondToBackRefresh"), userInfo: nil, repeats: false)
         }
         if (sender.tag == 999) {
             moreKeyPresses++
-            lookupController?.more()
+            Lookup.lookupController?.more()
             self.refreshData()
             moreOptionsBack.hidden = false
-            var timer = NSTimer.scheduledTimerWithTimeInterval(0.1, target: self, selector: Selector("respondToForwardRefresh"), userInfo: nil, repeats: false)
+            _ = NSTimer.scheduledTimerWithTimeInterval(0.2, target: self, selector: Selector("respondToForwardRefresh"), userInfo: nil, repeats: false)
         }
     }
     
     func respondToBackRefresh() {
-        var baseKey : String = nameSearch.text.capitalizedString
+        let baseKey : String = nameSearch.text!.capitalizedString
         if (keyPresses == 1) {
-            for index in 0..<objectKeys.count {
-                var keyInput = objectKeys[index] as! String
+            for index in 0..<GlobalVariables.sharedManager.objectKeys.count {
+                let keyInput = GlobalVariables.sharedManager.objectKeys[index] as! String
                 buttonsArray[index].setTitle("\(keyInput.capitalizedString)", forState: UIControlState.Normal)
                 buttonsArray[index].titleLabel!.text = "\(keyInput.capitalizedString)"
                 buttonsArray[index].hidden = false
@@ -355,16 +401,16 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
             }
         }
         if (keyPresses > 1) {
-            for index in 0..<objectKeys.count {
-                var keyInput = objectKeys[index] as! String
+            for index in 0..<GlobalVariables.sharedManager.objectKeys.count {
+                let keyInput = GlobalVariables.sharedManager.objectKeys[index] as! String
                 let combinedKeys = "\(baseKey)" + "\(keyInput)"
                 buttonsArray[index].setTitle("\(combinedKeys)", forState: UIControlState.Normal)
                 buttonsArray[index].titleLabel!.text = "\(combinedKeys)"
                 buttonsArray[index].hidden = false
                 buttonsBlurArray[index].layer.hidden = false
             }
-            if (objectKeys.count != self.buttonsArray.count) {
-                for key in objectKeys.count..<self.buttonsArray.count {
+            if (GlobalVariables.sharedManager.objectKeys.count != self.buttonsArray.count) {
+                for key in GlobalVariables.sharedManager.objectKeys.count..<self.buttonsArray.count {
                     buttonsArray[key].hidden = true
                     buttonsBlurArray[key].layer.hidden = true
                 }
@@ -373,33 +419,33 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
     }
     
     func respondToForwardRefresh() {
-        var baseKey : String = nameSearch.text.capitalizedString
+        let baseKey : String = nameSearch.text!.capitalizedString
         if (keyPresses == 1) {
-            for index in 0..<objectKeys.count {
-                var keyInput = objectKeys[index] as! String
+            for index in 0..<GlobalVariables.sharedManager.objectKeys.count {
+                let keyInput = GlobalVariables.sharedManager.objectKeys[index] as! String
                 buttonsArray[index].setTitle("\(keyInput.capitalizedString)", forState: UIControlState.Normal)
                 buttonsArray[index].titleLabel!.text = "\(keyInput.capitalizedString)"
                 buttonsArray[index].hidden = false
                 buttonsBlurArray[index].layer.hidden = false
             }
-            if (objectKeys.count != self.buttonsArray.count) {
-                for key in objectKeys.count..<self.buttonsArray.count {
+            if (GlobalVariables.sharedManager.objectKeys.count != self.buttonsArray.count) {
+                for key in GlobalVariables.sharedManager.objectKeys.count..<self.buttonsArray.count {
                     buttonsArray[key].hidden = true
                     buttonsBlurArray[key].layer.hidden = true
                 }
             }
         }
         if (keyPresses > 1) {
-            for index in 0..<objectKeys.count {
-                var keyInput = objectKeys[index] as! String
+            for index in 0..<GlobalVariables.sharedManager.objectKeys.count {
+                let keyInput = GlobalVariables.sharedManager.objectKeys[index] as! String
                 let combinedKeys = "\(baseKey)" + "\(keyInput)"
                 buttonsArray[index].setTitle("\(combinedKeys)", forState: UIControlState.Normal)
                 buttonsArray[index].titleLabel!.text = "\(combinedKeys)"
                 buttonsArray[index].hidden = false
                 buttonsBlurArray[index].layer.hidden = false
             }
-            if (objectKeys.count != self.buttonsArray.count) {
-                for key in objectKeys.count..<self.buttonsArray.count {
+            if (GlobalVariables.sharedManager.objectKeys.count != self.buttonsArray.count) {
+                for key in GlobalVariables.sharedManager.objectKeys.count..<self.buttonsArray.count {
                     buttonsArray[key].hidden = true
                     buttonsBlurArray[key].layer.hidden = true
                 }
@@ -408,39 +454,41 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
     }
     
     func buttonNormal(sender: UIButton!) {
-        sender.backgroundColor = UIColor.clearColor()
-        sender.setTitleColor(UIColor.whiteColor(), forState: UIControlState.Normal)
-        var baseKey = sender.titleLabel!.text!
-        for index in 0..<objectKeys.count {
-            var keyInput = objectKeys[index] as! String
+        sender.backgroundColor = UIColor(white: 1.0, alpha: 1.0)
+        sender.setTitleColor(UIColor.blackColor(), forState: UIControlState.Normal)
+        let baseKey = sender.titleLabel!.text!
+        for index in 0..<GlobalVariables.sharedManager.objectKeys.count {
+            let keyInput = GlobalVariables.sharedManager.objectKeys[index] as! String
             let combinedKeys = "\(baseKey)" + "\(keyInput)"
             buttonsArray[index].setTitle("\(combinedKeys)", forState: UIControlState.Normal)
             buttonsArray[index].titleLabel!.text = "\(combinedKeys)"
             buttonsArray[index].hidden = false
             buttonsBlurArray[index].layer.hidden = false
         }
-        if (objectKeys.count != self.buttonsArray.count) {
-            for key in objectKeys.count..<self.buttonsArray.count {
+        if (GlobalVariables.sharedManager.objectKeys.count != self.buttonsArray.count) {
+            for key in GlobalVariables.sharedManager.objectKeys.count..<self.buttonsArray.count {
                 buttonsArray[key].hidden = true
                 buttonsBlurArray[key].layer.hidden = true
             }
         }
         clearSearch.enabled = true
         deleteInput.enabled = true
+        sender.backgroundColor = UIColor.clearColor()
+        sender.setTitleColor(UIColor.whiteColor(), forState: UIControlState.Normal)
     }
     
     func combinedReset() {
-        var base = nameSearch.text.capitalizedString
-        for index in 0..<objectKeys.count {
-            var keyInput = objectKeys[index] as! String
+        let base = nameSearch.text!.capitalizedString
+        for index in 0..<GlobalVariables.sharedManager.objectKeys.count {
+            let keyInput = GlobalVariables.sharedManager.objectKeys[index] as! String
             let combinedKeys = "\(base)" + "\(keyInput)"
             buttonsArray[index].setTitle("\(combinedKeys)", forState: UIControlState.Normal)
             buttonsArray[index].titleLabel!.text = "\(combinedKeys)"
             buttonsArray[index].hidden = false
             buttonsBlurArray[index].layer.hidden = false
         }
-        if (objectKeys.count != self.buttonsArray.count) {
-            for key in objectKeys.count..<self.buttonsArray.count {
+        if (GlobalVariables.sharedManager.objectKeys.count != self.buttonsArray.count) {
+            for key in GlobalVariables.sharedManager.objectKeys.count..<self.buttonsArray.count {
                 buttonsArray[key].hidden = true
                 buttonsBlurArray[key].layer.hidden = true
             }
@@ -448,8 +496,8 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
     }
     
     func singleReset() {
-        for index in 0..<objectKeys.count {
-            var keyInput = objectKeys[index] as! String
+        for index in 0..<GlobalVariables.sharedManager.objectKeys.count {
+            let keyInput = GlobalVariables.sharedManager.objectKeys[index] as! String
             buttonsArray[index].setTitle("\(keyInput.capitalizedString)", forState: UIControlState.Normal)
             buttonsArray[index].titleLabel!.text = "\(keyInput.capitalizedString)"
             buttonsArray[index].hidden = false
