@@ -1,14 +1,16 @@
 {
-  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "D3EB558EA0849EF2D5B0E8AB90D8BA59D8558DFF",
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "05F74E77100870D80427A24AFF1D71DE4765E785",
   "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
 
   },
   "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "05F74E77100870D80427A24AFF1D71DE4765E785" : 0,
     "A74626CE6D1C2D73717655C7BFEC9DBBBC96751B" : 0,
     "D3EB558EA0849EF2D5B0E8AB90D8BA59D8558DFF" : 0
   },
   "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "D8CEB01C-0A32-419C-BA0A-6B04A3E2F4D9",
   "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "05F74E77100870D80427A24AFF1D71DE4765E785" : "HumanKontactBeta\/",
     "A74626CE6D1C2D73717655C7BFEC9DBBBC96751B" : "GitDesktopProjects\/LiquidFloatingActionButton",
     "D3EB558EA0849EF2D5B0E8AB90D8BA59D8558DFF" : "HumanKontact"
   },
@@ -16,6 +18,11 @@
   "DVTSourceControlWorkspaceBlueprintVersion" : 204,
   "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "src\/keyboardTest.xcworkspace",
   "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/seandavidmcgee\/HumanKontactBeta.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "05F74E77100870D80427A24AFF1D71DE4765E785"
+    },
     {
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/yoavlt\/LiquidFloatingActionButton.git",
       "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",

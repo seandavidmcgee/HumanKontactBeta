@@ -431,9 +431,10 @@ class FriendTableViewCell: UITableViewCell, UIScrollViewDelegate {
             let fNameCount = realm.objects(HKPerson).filter("firstName BEGINSWITH[c] '\(fChar)'")
             let lNameCount = realm.objects(HKPerson).filter("lastName BEGINSWITH[c] '\(fChar)'")
             let sectionCount = fNameCount.count + lNameCount.count
+            let totalCount = realm.objects(HKPerson).count
             let usageWeight: Double = Double(0.75) * (Double(sectionCount - person.indexedOrder) / Double(sectionCount))
             realm.beginWrite()
-            person.flUsageWeight = usageWeight + Double(person.indexedOrder)
+            person.flUsageWeight += usageWeight + Double(1 - (person.indexedOrder / totalCount))
             try realm.commitWrite()
             print("added \(person.fullName) to recents")
         } catch {
