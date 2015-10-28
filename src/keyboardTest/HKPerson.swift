@@ -187,7 +187,11 @@ extension HKPerson {
         
         if ABPersonHasImageData(person) {
             let data = ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatThumbnail) != nil ? ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatThumbnail).takeRetainedValue() : ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatOriginalSize).takeRetainedValue()
-            avatar = data
+            if data == ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatOriginalSize).takeRetainedValue() {
+                avatar = NSData()
+            } else {
+                avatar = data
+            }
         }
         
         readEmails(fromRecord: person, inRealm: realm)

@@ -40,7 +40,6 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
     var favsBtn = UIButton()
     var subNavView = UIView()
     var blurredImageView = UIImageView()
-    var session : WCSession!
     let realm = try! Realm()
     
     @IBOutlet weak var dashTransition: UIButton!
@@ -107,12 +106,6 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
                 self?.masterCollectionView.reloadData()
                 print("refresh")
             })
-        }
-        
-        if (WCSession.isSupported()) {
-            session = WCSession.defaultSession()
-            session.delegate = self // conforms to WCSessionDelegate
-            session.activateSession()
         }
         
         JTSplashView.splashViewWithBackgroundColor(nil, lineColor: nil)
@@ -288,7 +281,7 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
     
     func liquidFloatingActionButton(liquidFloatingActionButton: LiquidFloatingActionButton, didSelectItemAtIndex index: Int) {
         if index == 2 {
-            self.sortTableViewSettings()
+            _ = NSTimer.scheduledTimerWithTimeInterval(0.5, target: self, selector: Selector("sortTableViewSettings"), userInfo: nil, repeats: false)
         }
         blurredImageView.removeFromSuperview()
         self.button.showsMenu = !self.button.showsMenu
@@ -327,70 +320,6 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
         self.view.endEditing(false)
         super.touchesBegan(touches as Set<UITouch>, withEvent: event)
-    }
-    
-    func session(session: WCSession, didReceiveMessage message: [String : AnyObject], replyHandler: ([String : AnyObject]) -> Void) {
-        // Reply handler, received message
-        let value = message["request"] as? String
-        let recentValue = message["recent"]
-        
-        if value == "Realm" {
-            let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
-            let docsDir = dirPaths[0] as String
-            let filemgr = NSFileManager.defaultManager()
-            let documentsURL = filemgr.URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)[0]
-            
-            if filemgr.fileExistsAtPath(docsDir + "/default.realm") {
-                let fileURLs = try! filemgr.contentsOfDirectoryAtURL(documentsURL, includingPropertiesForKeys: nil, options: NSDirectoryEnumerationOptions.SkipsSubdirectoryDescendants)
-                for file in fileURLs {
-                    self.session.transferFile(file, metadata: nil)
-                }
-            } else {
-                print("Error no file here")
-            }
-        }
-        
-        if recentValue != nil {
-            let recordKey = recentValue as? String
-            addRecent(recordKey!)
-        }
-        
-        // Send a reply
-        replyHandler(["reply": "Realm sent"])
-    }
-    
-    func addRecent(key: String) {
-        dispatch_async(dispatch_get_main_queue(), { () -> Void in
-            self.addRecentSubTask(key)
-        })
-    }
-    
-    func addRecentSubTask(key: String) {
-        let person = realm.objectForPrimaryKey(HKPerson.self, key: key)
-        let recentIndexCount = RecentPeople.recents.count
-        
-        realm.beginWrite()
-        person!.recent = true
-        person!.recentIndex = recentIndexCount + 1
-        try! realm.commitWrite()
-    }
-    
-    func session(session: WCSession, didFinishFileTransfer fileTransfer: WCSessionFileTransfer, error: NSError?) {
-        let msg = ["complete": "Realm"]
-        
-        self.session.sendMessage(msg, replyHandler: { (replyMessage) -> Void in
-            // Reply handler - present the reply message on screen
-            let value = replyMessage["reply"] as? String
-            if value == "Realm added" {
-                print("watch realm success")
-            }
-            }) { (error:NSError) -> Void in
-                print(error.localizedDescription)
-        }
-        
-        if let error = error {
-            print("error: \(error.localizedDescription)")
-        }
     }
     
     func showNotifications() {
@@ -651,19 +580,6 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
-    func recentMessageToWatch(record: String) {
-        let msg = ["recent": record]
-        session.sendMessage(msg, replyHandler: { (replyMessage) -> Void in
-            // Reply handler - present the reply message on screen
-            let value = replyMessage["reply"] as? String
-            if value == "Recent added" {
-                print(value!)
-            }
-            }) { (error:NSError) -> Void in
-                print(error.localizedDescription)
-        }
-    }
-    
     func addNewPerson() {
         //let npvc = CNContact
         //npvc.newPersonViewDelegate = self
@@ -749,8 +665,9 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
         
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let vc = storyboard.instantiateViewControllerWithIdentifier("profileViewController") as! ProfileViewController
+        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
         
-        recentMessageToWatch("\(hkPerson.uuid)")
+        appDelegate.recentMessageToWatch("\(hkPerson.uuid)")
         
         backgroundAddRecent(hkPerson)
         
@@ -896,6 +813,7 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
         let scale: CGFloat = 2.0 // Automatically use scale factor of main screen
         
         var avatarNeeded: Bool! = false
+        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
         
         //Create an instance of SwiftPromptsView and assign its delegate
         prompt = SwiftPromptsView(frame: self.view.bounds)
@@ -915,7 +833,7 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
         prompt.messageButton.transform = CGAffineTransformMakeTranslation(0, 0)
         prompt.emailButton.transform = CGAffineTransformMakeTranslation(0, 0)
         
-        recentMessageToWatch("\(hkPerson.uuid)")
+        appDelegate.recentMessageToWatch("\(hkPerson.uuid)")
         
         backgroundAddRecent(hkPerson)
         
@@ -1119,11 +1037,11 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
         }
         
         if keyEntry == "" {
-            //if GlobalVariables.sharedManager.sortOrdering == "alpha" {
-                //People.people = realm.objects(HKPerson).sorted("fullName")
-            //} else {
-                //People.people = realm.objects(HKPerson).sorted("indexedOrder", ascending: true)
-            //}
+            if GlobalVariables.sharedManager.sortOrdering == "alpha" {
+                People.people = realm.objects(HKPerson).sorted("fullName")
+            } else {
+                People.people = realm.objects(HKPerson).sorted("indexedOrder", ascending: true)
+            }
         }
         else if searchString == "" {
             print("searchstring one word")

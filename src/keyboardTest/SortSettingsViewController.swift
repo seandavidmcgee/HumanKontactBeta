@@ -25,9 +25,9 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.backgroundColor = UIColor(hex: 0x00000d)
+        self.view.backgroundColor = UIColor(hex: 0xF8F8F8)
         navigationController?.delegate = self
-        masterTableView.frame = CGRect(x: 0, y: 46, width: self.view.frame.width, height: 354)
+        masterTableView.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height)
         masterTableView.delegate = self
         masterTableView.dataSource = self
         masterTableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: sortCellIdentifier)
@@ -43,7 +43,7 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
         let dismissBtn = UIButton(frame: CGRect(x: 0, y: 0, width: 22, height: 22))
         dismissBtn.setImage(UIImage(named: "Dismiss"), forState: UIControlState.Normal)
         dismissBtn.setImage(UIImage(named: "Dismiss"), forState: UIControlState.Highlighted)
-        dismissBtn.tintColor = .whiteColor()
+        dismissBtn.tintColor = .blackColor()
         dismissBtn.addTarget(self, action: Selector("dismiss"), forControlEvents:  UIControlEvents.TouchUpInside)
         let leftItem = UIBarButtonItem(customView: dismissBut)
         navigationItem.leftBarButtonItem = leftItem
@@ -86,9 +86,9 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
     
     func tableView(tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         let header: UITableViewHeaderFooterView = view as! UITableViewHeaderFooterView
-        header.contentView.backgroundColor = UIColor(hex: 0xe7e8e9)
+        header.contentView.backgroundColor = UIColor(red: 82 / 255.0, green: 112 / 255.0, blue: 235 / 255.0, alpha: 1.0)
         header.textLabel!.font = UIFont(name: "HelveticaNeue-Light", size: 17)!
-        header.textLabel!.textColor = UIColor.blackColor()
+        header.textLabel!.textColor = UIColor.whiteColor()
     }
     
     func tableView( tableView : UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -107,7 +107,7 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        return 64.0
+        return 54.0
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -139,14 +139,14 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     func orientSwitchSetup() -> DGRunkeeperSwitch {
-        orientSwitch.leftTitle = "Left-handed"
-        orientSwitch.rightTitle = "Right-handed"
-        orientSwitch.backgroundColor = UIColor(hex: 0xFB2155)
+        orientSwitch.leftTitle = "Left"
+        orientSwitch.rightTitle = "Right"
+        orientSwitch.backgroundColor = UIColor(hex: 0x00000d)
         orientSwitch.selectedBackgroundColor = .whiteColor()
         orientSwitch.titleColor = .whiteColor()
-        orientSwitch.selectedTitleColor = UIColor(hex: 0xFB2155)
+        orientSwitch.selectedTitleColor = UIColor(hex: 0x00000d)
         orientSwitch.titleFont = UIFont(name: "AvenirNext-Regular", size: 15.0)
-        orientSwitch.frame = CGRect(x: 44.0, y: 17.0, width: 225.0, height: 30.0)
+        orientSwitch.frame = CGRect(x: 34.0, y: 12.0, width: 150.0, height: 30.0)
         orientSwitch.addTarget(self, action: Selector("orientValueDidChange:"), forControlEvents: .ValueChanged)
         return orientSwitch
     }
@@ -155,12 +155,12 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
         sortNameSwitch.switchTitle = "sortName"
         sortNameSwitch.leftTitle = "First, Last"
         sortNameSwitch.rightTitle = "Last, First"
-        sortNameSwitch.backgroundColor = UIColor(hex: 0xFB2155)
+        sortNameSwitch.backgroundColor = UIColor(hex: 0x00000d)
         sortNameSwitch.selectedBackgroundColor = .whiteColor()
         sortNameSwitch.titleColor = .whiteColor()
-        sortNameSwitch.selectedTitleColor = UIColor(hex: 0xFB2155)
+        sortNameSwitch.selectedTitleColor = UIColor(hex: 0x00000d)
         sortNameSwitch.titleFont = UIFont(name: "AvenirNext-Regular", size: 15.0)
-        sortNameSwitch.frame = CGRect(x: 44.0, y: 17.0, width: 200.0, height: 30.0)
+        sortNameSwitch.frame = CGRect(x: 34.0, y: 12.0, width: 200.0, height: 30.0)
         sortNameSwitch.addTarget(self, action: Selector("sortValueDidChange:"), forControlEvents: .ValueChanged)
         return sortNameSwitch
     }
@@ -169,12 +169,12 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
         orderNameSwitch.switchTitle = "orderName"
         orderNameSwitch.leftTitle = "A - Z"
         orderNameSwitch.rightTitle = "Indexed"
-        orderNameSwitch.backgroundColor = UIColor(hex: 0xFB2155)
+        orderNameSwitch.backgroundColor = UIColor(hex: 0x00000d)
         orderNameSwitch.selectedBackgroundColor = .whiteColor()
         orderNameSwitch.titleColor = .whiteColor()
-        orderNameSwitch.selectedTitleColor = UIColor(hex: 0xFB2155)
+        orderNameSwitch.selectedTitleColor = UIColor(hex: 0x00000d)
         orderNameSwitch.titleFont = UIFont(name: "AvenirNext-Regular", size: 15.0)
-        orderNameSwitch.frame = CGRect(x: 44.0, y: 17.0, width: 150.0, height: 30.0)
+        orderNameSwitch.frame = CGRect(x: 34.0, y: 12.0, width: 150.0, height: 30.0)
         orderNameSwitch.addTarget(self, action: Selector("orderValueDidChange:"), forControlEvents: .ValueChanged)
         return orderNameSwitch
     }
@@ -182,12 +182,12 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
     func backupSwitchSetup() -> DGRunkeeperSwitch {
         backupSwitch.leftTitle = "No"
         backupSwitch.rightTitle = "Yes"
-        backupSwitch.backgroundColor = UIColor(hex: 0xFB2155)
+        backupSwitch.backgroundColor = UIColor(hex: 0x00000d)
         backupSwitch.selectedBackgroundColor = .whiteColor()
         backupSwitch.titleColor = .whiteColor()
-        backupSwitch.selectedTitleColor = UIColor(hex: 0xFB2155)
+        backupSwitch.selectedTitleColor = UIColor(hex: 0x00000d)
         backupSwitch.titleFont = UIFont(name: "AvenirNext-Regular", size: 15.0)
-        backupSwitch.frame = CGRect(x: 44.0, y: 17.0, width: 100.0, height: 30.0)
+        backupSwitch.frame = CGRect(x: 34.0, y: 12.0, width: 100.0, height: 30.0)
         backupSwitch.addTarget(self, action: Selector("backupValueDidChange:"), forControlEvents: .ValueChanged)
         return backupSwitch
     }

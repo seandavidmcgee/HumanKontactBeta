@@ -18,6 +18,9 @@ class ExtensionDelegate: NSObject, WKExtensionDelegate, WCSessionDelegate {
     
     func applicationDidFinishLaunching() {
         // Perform any final initialization of your application.
+    }
+
+    func applicationDidBecomeActive() {
         if (WCSession.isSupported()) {
             session = WCSession.defaultSession()
             session.delegate = self
@@ -29,10 +32,6 @@ class ExtensionDelegate: NSObject, WKExtensionDelegate, WCSessionDelegate {
             
             return
         }
-    }
-
-    func applicationDidBecomeActive() {
-        
     }
     
     func applicationWillResignActive() {
@@ -108,8 +107,22 @@ class ExtensionDelegate: NSObject, WKExtensionDelegate, WCSessionDelegate {
             actions: actions)
     }
     
-    // Received file from iPhone
+    func requestToPhone() {
+        let msg = ["request": "Realm"]
+            
+        session.sendMessage(msg, replyHandler: { (replyMessage) -> Void in
+            // Reply handler - present the reply message on screen
+            let value = replyMessage["reply"] as? String
+            if value == "Realm sent" {
+                print(value!)
+            }
+            }) { (error:NSError) -> Void in
+                print(error.localizedDescription)
+        }
+    }
     
+    // Received file from iPhone
+
     func session(session: WCSession, didReceiveFile file: WCSessionFile) {
         print("Received File: \(file)")
         let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
@@ -136,7 +149,7 @@ class ExtensionDelegate: NSObject, WKExtensionDelegate, WCSessionDelegate {
     
     func continueToSearch() {
         if fileCount > 6 {
-            InterfaceController().proceedToSearch()
+            WKInterfaceController.reloadRootControllersWithNames(["Search"], contexts: nil)
         }
     }
 }

@@ -54,18 +54,16 @@ class KeyboardControllerSeventh: WKInterfaceController {
     }
     
     func refreshData() {
-        dispatch_async(dispatch_get_main_queue()) {
-            if let indexController = lookupWatchController {
-                selectionValues.removeAll(keepCapacity: false)
-                selectionValues = indexController.options!
-                let selections = indexController.branchSelecions!
-                myResults += selections
-                activeSearch = indexController.entrySoFar!
-                self.searchLabel2.setText(activeSearch)
-                self.roundToFour(selectionValues.count)
-                overFlow = self.remFromFour(selectionValues.count)
-                self.dynamicKeyboardLayout()
-            }
+        if let indexController = lookupWatchController {
+            selectionValues.removeAll(keepCapacity: false)
+            selectionValues = indexController.options!
+            let selections = indexController.branchSelecions!
+            myResults += selections
+            activeSearch = indexController.entrySoFar!
+            self.searchLabel2.setText(activeSearch)
+            self.roundToFour(selectionValues.count)
+            overFlow = self.remFromFour(selectionValues.count)
+            self.dynamicKeyboardLayout()
         }
     }
     
@@ -87,7 +85,7 @@ class KeyboardControllerSeventh: WKInterfaceController {
     
     var currentPage: Int = 7
     var populateKeys = [WKInterfaceLabel]()
-    var keysToDisplay: Int!
+    var keysToDisplay = Int()
     var selectedIndex: String!
     
     override func awakeWithContext(context: AnyObject?) {
@@ -156,9 +154,9 @@ class KeyboardControllerSeventh: WKInterfaceController {
                 let keyValue = keyValues[index] as! String
                 let stringCount = keyValue.characters.count
                 if stringCount < 15 {
-                    self.responsiveKeys(stringCount, indexCount: indexCount)
                     let key = populateKeys[indexCount]
                     key.setText("\(keyValue.capitalizedString)")
+                    self.responsiveKeys(stringCount, indexCount: indexCount)
                 } else {
                     self.responsiveLongKeys(keyValue.capitalizedString, indexCount: indexCount)
                 }
@@ -169,9 +167,9 @@ class KeyboardControllerSeventh: WKInterfaceController {
                 let keyValue = "\(activeSearch)" + "\(selectionValues[index] as! String)"
                 let stringCount = keyValue.characters.count
                 if stringCount < 15 {
-                    self.responsiveKeys(stringCount, indexCount: indexCount)
                     let key = populateKeys[indexCount]
                     key.setText("\(keyValue.capitalizedString)")
+                    self.responsiveKeys(stringCount, indexCount: indexCount)
                 } else {
                     self.responsiveLongKeys(keyValue.capitalizedString, indexCount: indexCount)
                 }
@@ -367,12 +365,12 @@ class KeyboardControllerSeventh: WKInterfaceController {
         
         People.people = queriedSearch
         activeSearch = keyEntry
-        peopleLimit = People.people.count
+        peopleLimit = queriedSearch.count
         if peopleLimit <= 6 {
             self.goToResults()
         } else {
-            self.refreshData()
             self.branchOptions(index)
+            self.refreshData()
         }
     }
     

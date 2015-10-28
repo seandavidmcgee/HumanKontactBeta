@@ -426,17 +426,11 @@ class FriendTableViewCell: UITableViewCell, UIScrollViewDelegate {
     private func callNumber(sender: AnyObject!) {
         do {
             let realm = try Realm()
-            let firstIndex = person.firstName.startIndex.advancedBy(1)
-            let fChar = person.firstName.substringToIndex(firstIndex)
-            let fNameCount = realm.objects(HKPerson).filter("firstName BEGINSWITH[c] '\(fChar)'")
-            let lNameCount = realm.objects(HKPerson).filter("lastName BEGINSWITH[c] '\(fChar)'")
-            let sectionCount = fNameCount.count + lNameCount.count
             let totalCount = realm.objects(HKPerson).count
-            let usageWeight: Double = Double(0.75) * (Double(sectionCount - person.indexedOrder) / Double(sectionCount))
+            let usageWeight: Double = Double(0.75) * (Double(totalCount - person.indexedOrder) / Double(totalCount))
             realm.beginWrite()
             person.flUsageWeight += usageWeight + Double(1 - (person.indexedOrder / totalCount))
             try realm.commitWrite()
-            print("added \(person.fullName) to recents")
         } catch {
             print("Something went wrong!")
         }
@@ -463,6 +457,16 @@ class FriendTableViewCell: UITableViewCell, UIScrollViewDelegate {
     }
     
     private func textNumber(phoneNumber:String) {
+        do {
+            let realm = try Realm()
+            let totalCount = realm.objects(HKPerson).count
+            let usageWeight: Double = Double(0.5) * (Double(totalCount - person.indexedOrder) / Double(totalCount))
+            realm.beginWrite()
+            person.flUsageWeight += usageWeight + Double(1 - (person.indexedOrder / totalCount))
+            try realm.commitWrite()
+        } catch {
+            print("Something went wrong!")
+        }
         let strippedPhoneNumber = phoneNumber.stringByReplacingOccurrencesOfString("[^0-9 ]", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range:nil);
         var cleanNumber = strippedPhoneNumber.removeWhitespace()
         cleanNumber = cleanNumber.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
@@ -485,6 +489,16 @@ class FriendTableViewCell: UITableViewCell, UIScrollViewDelegate {
     }
     
     private func emailPressed(email:String) {
+        do {
+            let realm = try Realm()
+            let totalCount = realm.objects(HKPerson).count
+            let usageWeight: Double = Double(0.25) * (Double(totalCount - person.indexedOrder) / Double(totalCount))
+            realm.beginWrite()
+            person.flUsageWeight += usageWeight + Double(1 - (person.indexedOrder / totalCount))
+            try realm.commitWrite()
+        } catch {
+            print("Something went wrong!")
+        }
         if let emailUrl:NSURL = NSURL(string: "mailto:\(email)") {
             let application:UIApplication = UIApplication.sharedApplication()
             if (application.canOpenURL(emailUrl)) {

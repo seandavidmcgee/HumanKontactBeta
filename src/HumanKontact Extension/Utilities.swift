@@ -33,13 +33,13 @@ protocol SearchControllerDelegate  {
 }
 
 struct Favorites {
-    static var favorites = try! Realm().objects(HKPerson).filter("favorite == true").sorted("favIndex", ascending: true)
+    static var favorites = peopleRealm.objects(HKPerson).filter("favorite == true").sorted("favIndex", ascending: true)
 }
 
 struct People {
-    static var realm = try! Realm().objects(HKPerson)
-    static var people = try! Realm().objects(HKPerson).sorted("indexedOrder", ascending: true) // all people
-    static var contacts = try! Realm().objects(HKPerson).filter("recent == true").sorted("recentIndex", ascending: false) // recents
+    static var realm = peopleRealm.objects(HKPerson)
+    static var people = peopleRealm.objects(HKPerson).sorted("indexedOrder", ascending: true) // all people
+    static var contacts = peopleRealm.objects(HKPerson).filter("recent == true").sorted("recentIndex", ascending: false) // recents
 }
 
 extension Array {

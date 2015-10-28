@@ -50,7 +50,11 @@ class SearchController: WKInterfaceController, ContactRowDelegate, RecentsDelega
         super.awakeWithContext(context)
         self._loadMoreButton.setHidden(true)
         self.loadingImage!.setImageNamed("circleani1_")
-        returnFromResults = false
+        if context?.value != "No" {
+            returnFromResults = false
+        } else {
+            returnFromResults = true
+        }
         self.timelineQueue()
     }
     
@@ -554,12 +558,15 @@ class TripleColumnRowController: NSObject {
 }
 
 class ABWatchManager : NSObject {
-    class func peopleRealm() -> Realm {
-        // Switch return statements for in-memory vs. persisted Realms
-        //return Realm(inMemoryIdentifier: "OSTABManagerRealm")
-        let documentsURL = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)[0]
-        let realmPath = documentsURL.path!.stringByAppendingPathComponent("default.realm")
+    class func peopleRealm() -> Realm  {
+        func fileInDocumentsDirectory(filename: String) -> String {
+            let documentsURL = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)[0]
+            let fileURL = documentsURL.URLByAppendingPathComponent(filename)
+            return fileURL.path!
+        }
+        
+        let realmPath: String = fileInDocumentsDirectory("default.realm")
         Realm.Configuration.defaultConfiguration.path = realmPath
-        return try! Realm(path: Realm.Configuration.defaultConfiguration.path!)
+        return try! Realm(path: realmPath)
     }
 }

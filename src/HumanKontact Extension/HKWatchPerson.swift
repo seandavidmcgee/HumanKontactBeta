@@ -66,6 +66,7 @@ class HKPerson : Object {
     dynamic var avatar = NSData()
     dynamic var avatarColor = NSData()
     
+    dynamic var flUsageWeight: Double = 0
     dynamic var recentIndex = 0
     dynamic var favIndex = 0
     dynamic var indexedOrder = 0

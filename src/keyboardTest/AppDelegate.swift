@@ -13,11 +13,14 @@ import Crashlytics
 import AudioToolbox
 import LNRSimpleNotifications
 import SwiftyUserDefaults
+import WatchConnectivity
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, WCSessionDelegate {
     var window: UIWindow?
     var walkthrough:MMPlayStandPageViewController?
+    var session : WCSession!
+    let realm = try! Realm()
     
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
@@ -70,6 +73,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             LNRSimpleNotifications.sharedNotificationManager.notificationSound = mySound
         }
         
+        if (WCSession.isSupported()) {
+            session = WCSession.defaultSession()
+            session.delegate = self // conforms to WCSessionDelegate
+            session.activateSession()
+        }
+        
         return true
     }
     
@@ -82,6 +91,81 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         let realmPath: String = fileInDocumentsDirectory("default.realm")
         Realm.Configuration.defaultConfiguration.path = realmPath
+    }
+    
+    func session(session: WCSession, didReceiveMessage message: [String : AnyObject], replyHandler: ([String : AnyObject]) -> Void) {
+        // Reply handler, received message
+        let value = message["request"] as? String
+        let recentValue = message["recent"]
+        
+        if value == "Realm" {
+            let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
+            let docsDir = dirPaths[0] as String
+            let filemgr = NSFileManager.defaultManager()
+            let documentsURL = filemgr.URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)[0]
+            
+            if filemgr.fileExistsAtPath(docsDir + "/default.realm") {
+                let fileURLs = try! filemgr.contentsOfDirectoryAtURL(documentsURL, includingPropertiesForKeys: nil, options: NSDirectoryEnumerationOptions.SkipsSubdirectoryDescendants)
+                for file in fileURLs {
+                    self.session.transferFile(file, metadata: nil)
+                    print(file)
+                }
+            } else {
+                print("Error no file here")
+            }
+        }
+        
+        if recentValue != nil {
+            let recordKey = recentValue as? String
+            addRecent(recordKey!)
+        }
+        
+        // Send a reply
+        replyHandler(["reply": "Realm sent"])
+    }
+    
+    func addRecent(key: String) {
+        dispatch_async(dispatch_get_main_queue(), { () -> Void in
+            self.addRecentSubTask(key)
+        })
+    }
+    
+    func addRecentSubTask(key: String) {
+        let person = realm.objectForPrimaryKey(HKPerson.self, key: key)
+        let recentIndexCount = RecentPeople.recents.count
+        
+        realm.beginWrite()
+        person!.recent = true
+        person!.recentIndex = recentIndexCount + 1
+        try! realm.commitWrite()
+    }
+    
+    func session(session: WCSession, didFinishFileTransfer fileTransfer: WCSessionFileTransfer, error: NSError?) {
+        let msg = ["complete": "Realm"]
+        
+        session.sendMessage(msg, replyHandler: {(replyMessage) -> Void in
+            // handle reply from iPhone app here
+            let value = replyMessage["reply"] as? String
+                if value == "Realm added" {
+                    print("watch realm success")
+                }
+            }, errorHandler: {(error:NSError) -> Void in
+                // catch any errors here
+                print(error.localizedDescription)
+        })
+    }
+    
+    func recentMessageToWatch(record: String) {
+        let msg = ["recent": record]
+        session.sendMessage(msg, replyHandler: { (replyMessage) -> Void in
+            // Reply handler - present the reply message on screen
+            let value = replyMessage["reply"] as? String
+            if value == "Recent added" {
+                print(value!)
+            }
+            }) { (error:NSError) -> Void in
+                print(error.localizedDescription)
+        }
     }
     
     func application(application: UIApplication, continueUserActivity userActivity: NSUserActivity, restorationHandler: ([AnyObject]?) -> Void) -> Bool {

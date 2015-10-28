@@ -180,7 +180,7 @@ class ResultsController: WKInterfaceController, ContactRowDelegate {
         peopleLimit = 15
         contactInit = 0
         contactLimit = 15
-        WKInterfaceController.reloadRootControllersWithNames(["Landing"], contexts: ["No"])
+        WKInterfaceController.reloadRootControllersWithNames(["Landing"], contexts: nil)
     }
     
     @IBOutlet weak var _loadMoreButton: WKInterfaceButton!

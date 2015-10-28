@@ -10,7 +10,6 @@ import WatchKit
 import Foundation
 
 class InterfaceController: WKInterfaceController {
-    var fileCount = 0
     
     @IBOutlet weak var loadingImage: WKInterfaceImage!
     @IBOutlet weak var loadingTxt: WKInterfaceLabel!
@@ -19,7 +18,6 @@ class InterfaceController: WKInterfaceController {
     @IBOutlet weak var loadingImageGroup: WKInterfaceGroup!
     
     @IBAction func searchButton() {
-        let msg = ["request": "Realm"]
         let appDelegate = WKExtension.sharedExtension().delegate as! ExtensionDelegate
         let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory,
             .UserDomainMask, true)
@@ -30,15 +28,7 @@ class InterfaceController: WKInterfaceController {
             pushControllerWithName("Search", context: nil)
         } else {
             self.loadingContacts()
-            appDelegate.session.sendMessage(msg, replyHandler: { (replyMessage) -> Void in
-                // Reply handler - present the reply message on screen
-                let value = replyMessage["reply"] as? String
-                if value == "Realm sent" {
-                    print(value!)
-                }
-                }) { (error:NSError) -> Void in
-                    print(error.localizedDescription)
-            }
+            appDelegate.requestToPhone()
         }
     }
     
@@ -64,18 +54,14 @@ class InterfaceController: WKInterfaceController {
     override func didDeactivate() {
         // This method is called when watch view controller is no longer visible
         super.didDeactivate()
+        self.loadingImage!.stopAnimating()
+        self.loadingImageGroup!.setHidden(true)
+        self.searchButtonGroup!.setHidden(false)
     }
     
     func loadingContacts() {
         self.searchButtonGroup!.setHidden(true)
         self.loadingImageGroup!.setHidden(false)
         self.loadingImage!.startAnimatingWithImagesInRange(NSRange(location: 1,length: 9), duration: 1, repeatCount: 100)
-    }
-    
-    func proceedToSearch() {
-        self.loadingImage!.stopAnimating()
-        self.loadingImageGroup!.setHidden(true)
-        self.searchButtonGroup!.setHidden(false)
-        pushControllerWithName("Search", context: nil)
     }
 }

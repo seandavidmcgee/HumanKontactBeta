@@ -429,6 +429,17 @@ class SwiftPromptsView: UIView
     }
     
     private func callNumber(phoneNumber:String) {
+        do {
+            let realm = try Realm()
+            let totalCount = realm.objects(HKPerson).count
+            let usageWeight: Double = Double(0.75) * (Double(totalCount - person.indexedOrder) / Double(totalCount))
+            realm.beginWrite()
+            person.flUsageWeight += usageWeight + Double(1 - (person.indexedOrder / totalCount))
+            try realm.commitWrite()
+        } catch {
+            print("Something went wrong!")
+        }
+        
         let strippedPhoneNumber = phoneNumber.stringByReplacingOccurrencesOfString("[^0-9 ]", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range:nil);
         var cleanNumber = strippedPhoneNumber.removeWhitespace()
         cleanNumber = cleanNumber.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
@@ -451,6 +462,17 @@ class SwiftPromptsView: UIView
     }
     
     private func textNumber(phoneNumber:String) {
+        do {
+            let realm = try Realm()
+            let totalCount = realm.objects(HKPerson).count
+            let usageWeight: Double = Double(0.5) * (Double(totalCount - person.indexedOrder) / Double(totalCount))
+            realm.beginWrite()
+            person.flUsageWeight += usageWeight + Double(1 - (person.indexedOrder / totalCount))
+            try realm.commitWrite()
+        } catch {
+            print("Something went wrong!")
+        }
+        
         let strippedPhoneNumber = phoneNumber.stringByReplacingOccurrencesOfString("[^0-9 ]", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range:nil);
         var cleanNumber = strippedPhoneNumber.removeWhitespace()
         cleanNumber = cleanNumber.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
@@ -473,6 +495,17 @@ class SwiftPromptsView: UIView
     }
     
     private func emailPressed(email:String) {
+        do {
+            let realm = try Realm()
+            let totalCount = realm.objects(HKPerson).count
+            let usageWeight: Double = Double(0.25) * (Double(totalCount - person.indexedOrder) / Double(totalCount))
+            realm.beginWrite()
+            person.flUsageWeight += usageWeight + Double(1 - (person.indexedOrder / totalCount))
+            try realm.commitWrite()
+        } catch {
+            print("Something went wrong!")
+        }
+        
         if let emailUrl:NSURL = NSURL(string: "mailto:\(email)") {
             let application:UIApplication = UIApplication.sharedApplication()
             if (application.canOpenURL(emailUrl)) {
