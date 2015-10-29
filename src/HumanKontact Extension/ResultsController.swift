@@ -177,6 +177,7 @@ class ResultsController: WKInterfaceController, ContactRowDelegate {
     }
     @IBAction func callKeyboard() {
         first = true
+        indexReset()
         peopleLimit = 15
         contactInit = 0
         contactLimit = 15
