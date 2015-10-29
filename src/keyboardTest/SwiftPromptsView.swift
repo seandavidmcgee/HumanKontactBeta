@@ -241,7 +241,7 @@ class SwiftPromptsView: UIView
             {
                 let initials2Path = UILabel(frame: CGRect(x: 2.5, y: -9, width: 35, height: 35))
                 initials2Path.font = UIFont(name: "HelveticaNeue-Thin", size: 21)!
-                initials2Path.textColor = UIColor.whiteColor()
+                initials2Path.textColor = UIColor.blackColor()
                 initials2Path.textAlignment = NSTextAlignment.Center
                 initials2Path.text = promptInitialsText
                 dismissButton.addSubview(initials2Path)
@@ -430,12 +430,12 @@ class SwiftPromptsView: UIView
     
     private func callNumber(phoneNumber:String) {
         do {
-            let realm = try Realm()
+            let realm = RealmManager.setupRealmInApp()
             let totalCount = realm.objects(HKPerson).count
             let usageWeight: Double = Double(0.75) * (Double(totalCount - person.indexedOrder) / Double(totalCount))
             realm.beginWrite()
             person.flUsageWeight += usageWeight + Double(1 - (person.indexedOrder / totalCount))
-            try realm.commitWrite()
+            realm.commitWrite()
         } catch {
             print("Something went wrong!")
         }
@@ -463,12 +463,12 @@ class SwiftPromptsView: UIView
     
     private func textNumber(phoneNumber:String) {
         do {
-            let realm = try Realm()
+            let realm = RealmManager.setupRealmInApp()
             let totalCount = realm.objects(HKPerson).count
             let usageWeight: Double = Double(0.5) * (Double(totalCount - person.indexedOrder) / Double(totalCount))
             realm.beginWrite()
             person.flUsageWeight += usageWeight + Double(1 - (person.indexedOrder / totalCount))
-            try realm.commitWrite()
+            realm.commitWrite()
         } catch {
             print("Something went wrong!")
         }
@@ -496,12 +496,12 @@ class SwiftPromptsView: UIView
     
     private func emailPressed(email:String) {
         do {
-            let realm = try Realm()
+            let realm = RealmManager.setupRealmInApp()
             let totalCount = realm.objects(HKPerson).count
             let usageWeight: Double = Double(0.25) * (Double(totalCount - person.indexedOrder) / Double(totalCount))
             realm.beginWrite()
             person.flUsageWeight += usageWeight + Double(1 - (person.indexedOrder / totalCount))
-            try realm.commitWrite()
+            realm.commitWrite()
         } catch {
             print("Something went wrong!")
         }

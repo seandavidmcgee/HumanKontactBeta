@@ -20,16 +20,16 @@ func mydelay(seconds seconds:Double, completion:()->()) {
 }
 
 struct People {
-    static var people = try! Realm().objects(HKPerson).sorted("fullName")
-    static var names = try! Realm().objects(HKPerson).sorted("indexedOrder", ascending: true)
+    static var people = RealmManager.setupRealmInApp().objects(HKPerson).sorted("fullName")
+    static var names = RealmManager.setupRealmInApp().objects(HKPerson).sorted("indexedOrder", ascending: true)
 }
 
 struct RecentPeople {
-    static var recents = try! Realm().objects(HKPerson).filter("recent == true").sorted("recentIndex", ascending: false)
+    static var recents = RealmManager.setupRealmInApp().objects(HKPerson).filter("recent == true").sorted("recentIndex", ascending: false)
 }
 
 struct FavPeople {
-    static var favorites = try! Realm().objects(HKPerson).filter("favorite == true").sorted("favIndex", ascending: true)
+    static var favorites = RealmManager.setupRealmInApp().objects(HKPerson).filter("favorite == true").sorted("favIndex", ascending: true)
 }
 
 struct Lookup {
@@ -169,12 +169,12 @@ extension UIButton {
 extension UITableViewCell {
     func backgroundAddRecent(person: HKPerson) {
         do {
+            let realm = RealmManager.setupRealmInApp()
             let recentIndexCount = RecentPeople.recents.first?.recentIndex ?? Int(0.5)
-            let realm = try Realm()
             realm.beginWrite()
             person.recent = true
             person.recentIndex = recentIndexCount + 1
-            try realm.commitWrite()
+            realm.commitWrite()
             print("added \(person.fullName) to recents")
         } catch {
             print("Something went wrong!")
@@ -183,12 +183,12 @@ extension UITableViewCell {
     
     func backgroundAddFavorite(person: HKPerson) {
         do {
+            let realm = RealmManager.setupRealmInApp()
             let favIndexCount = FavPeople.favorites.first?.favIndex ?? Int(0.5)
-            let realm = try Realm()
             realm.beginWrite()
             person.favorite = true
             person.favIndex = favIndexCount + 1
-            try realm.commitWrite()
+            realm.commitWrite()
             print("added \(person.fullName) to favorites")
         } catch {
             print("Something went wrong!")
@@ -197,10 +197,10 @@ extension UITableViewCell {
     
     func backgroundRemoveFavorite(person: HKPerson) {
         do {
-            let realm = try Realm()
+            let realm = RealmManager.setupRealmInApp()
             realm.beginWrite()
             person.favorite = false
-            try realm.commitWrite()
+            realm.commitWrite()
             print("removed \(person.fullName) from favorites")
         } catch {
             print("Something went wrong!")
@@ -210,9 +210,10 @@ extension UITableViewCell {
 
 extension UIViewController {
     func executeUserActivityPerson(hkPerson: String, activity: NSUserActivity) {
+        let realm = RealmManager.setupRealmInApp()
         switch activity.activityType {
         case ActivityKeys.ChoosePerson:
-            if let person = try! Realm().objectForPrimaryKey(HKPerson.self, key: hkPerson) {
+            if let person = realm.objectForPrimaryKey(HKPerson.self, key: hkPerson) {
                 let storyboard = UIStoryboard(name: "Main", bundle: nil)
                 let vc = storyboard.instantiateViewControllerWithIdentifier("profileViewController") as! ProfileViewController
                 
@@ -304,13 +305,12 @@ extension UIViewController {
     
     func backgroundAddRecent(person: HKPerson) {
         do {
+            let realm = RealmManager.setupRealmInApp()
             let recentIndexCount = RecentPeople.recents.first?.recentIndex ?? Int(0.5)
-            let realm = try Realm()
             realm.beginWrite()
             person.recent = true
             person.recentIndex = recentIndexCount + 1
-            
-            try realm.commitWrite()
+            realm.commitWrite()
             print("added \(person.fullName) to recents")
         } catch {
             print("Something went wrong!")
@@ -319,14 +319,14 @@ extension UIViewController {
     
     func backgroundAddFavorite(person: HKPerson) {
         do {
+            let realm = RealmManager.setupRealmInApp()
             let favIndexCount = FavPeople.favorites.first?.favIndex ?? Int(0.5)
-            let realm = try Realm()
             realm.beginWrite()
             person.favorite = true
             person.favIndex = favIndexCount + 1
             
             do {
-                try realm.commitWrite()
+                realm.commitWrite()
             } catch {
                 print("Something went wrong!")
             }
@@ -338,10 +338,10 @@ extension UIViewController {
     
     func backgroundRemoveFavorite(person: HKPerson) {
         do {
-            let realm = try Realm()
+            let realm = RealmManager.setupRealmInApp()
             realm.beginWrite()
             person.favorite = false
-            try realm.commitWrite()
+            realm.commitWrite()
             print("removed \(person.fullName) from favorites")
         } catch {
             print("Something went wrong!")

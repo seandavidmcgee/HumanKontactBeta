@@ -425,12 +425,12 @@ class FriendTableViewCell: UITableViewCell, UIScrollViewDelegate {
     
     private func callNumber(sender: AnyObject!) {
         do {
-            let realm = try Realm()
+            let realm = RealmManager.setupRealmInApp()
             let totalCount = realm.objects(HKPerson).count
             let usageWeight: Double = Double(0.75) * (Double(totalCount - person.indexedOrder) / Double(totalCount))
             realm.beginWrite()
             person.flUsageWeight += usageWeight + Double(1 - (person.indexedOrder / totalCount))
-            try realm.commitWrite()
+            realm.commitWrite()
         } catch {
             print("Something went wrong!")
         }
@@ -458,12 +458,12 @@ class FriendTableViewCell: UITableViewCell, UIScrollViewDelegate {
     
     private func textNumber(phoneNumber:String) {
         do {
-            let realm = try Realm()
+            let realm = RealmManager.setupRealmInApp()
             let totalCount = realm.objects(HKPerson).count
             let usageWeight: Double = Double(0.5) * (Double(totalCount - person.indexedOrder) / Double(totalCount))
             realm.beginWrite()
             person.flUsageWeight += usageWeight + Double(1 - (person.indexedOrder / totalCount))
-            try realm.commitWrite()
+            realm.commitWrite()
         } catch {
             print("Something went wrong!")
         }
@@ -490,12 +490,12 @@ class FriendTableViewCell: UITableViewCell, UIScrollViewDelegate {
     
     private func emailPressed(email:String) {
         do {
-            let realm = try Realm()
+            let realm = RealmManager.setupRealmInApp()
             let totalCount = realm.objects(HKPerson).count
             let usageWeight: Double = Double(0.25) * (Double(totalCount - person.indexedOrder) / Double(totalCount))
             realm.beginWrite()
             person.flUsageWeight += usageWeight + Double(1 - (person.indexedOrder / totalCount))
-            try realm.commitWrite()
+            realm.commitWrite()
         } catch {
             print("Something went wrong!")
         }

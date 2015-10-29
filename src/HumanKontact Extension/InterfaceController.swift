@@ -9,6 +9,10 @@
 import WatchKit
 import Foundation
 
+var keyValues = [AnyObject]()
+var myResults = [AnyObject]()
+var selectionValues = [AnyObject]()
+
 class InterfaceController: WKInterfaceController {
     
     @IBOutlet weak var loadingImage: WKInterfaceImage!
@@ -19,8 +23,7 @@ class InterfaceController: WKInterfaceController {
     
     @IBAction func searchButton() {
         let appDelegate = WKExtension.sharedExtension().delegate as! ExtensionDelegate
-        let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory,
-            .UserDomainMask, true)
+        let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
         let docsDir = dirPaths[0] as String
         let filemgr = NSFileManager.defaultManager()
         
@@ -49,6 +52,7 @@ class InterfaceController: WKInterfaceController {
     override func willActivate() {
         // This method is called when watch view controller is about to be visible to user
         super.willActivate()
+        //self.delegate?.reloadTableData(false)
     }
     
     override func didDeactivate() {
@@ -57,6 +61,21 @@ class InterfaceController: WKInterfaceController {
         self.loadingImage!.stopAnimating()
         self.loadingImageGroup!.setHidden(true)
         self.searchButtonGroup!.setHidden(false)
+    }
+    
+    func showAlertControllerWithStyle(style: WKAlertControllerStyle!) {
+        let cancelAction = WKAlertAction(
+            title: "Okay",
+            style: WKAlertActionStyle.Cancel) { () -> Void in
+                print("Destructive")
+        }
+        
+        let actions = [cancelAction]
+        self.presentAlertControllerWithTitle(
+            "Loading Contacts from iPhone",
+            message: "Please open HumanKontact on your iPhone to sync your contacts for the first time.",
+            preferredStyle: style,
+            actions: actions)
     }
     
     func loadingContacts() {

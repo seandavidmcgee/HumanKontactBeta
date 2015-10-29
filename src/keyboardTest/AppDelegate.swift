@@ -52,8 +52,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WCSessionDelegate {
         let main = UIStoryboard(name: "Main", bundle: nil)
         walkthrough = main.instantiateViewControllerWithIdentifier("playstand") as? MMPlayStandPageViewController
         
-        setupRealmInApp()
-        
         let contactsImage = UIImage(named: "Contacts")
         let contacts = contactsImage?.imageWithColor(UIColor.whiteColor())
         
@@ -80,17 +78,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WCSessionDelegate {
         }
         
         return true
-    }
-    
-    func setupRealmInApp() {
-        func fileInDocumentsDirectory(filename: String) -> String {
-            let documentsURL = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)[0]
-            let fileURL = documentsURL.URLByAppendingPathComponent(filename)
-            return fileURL.path!
-        }
-        
-        let realmPath: String = fileInDocumentsDirectory("default.realm")
-        Realm.Configuration.defaultConfiguration.path = realmPath
     }
     
     func session(session: WCSession, didReceiveMessage message: [String : AnyObject], replyHandler: ([String : AnyObject]) -> Void) {
@@ -226,3 +213,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WCSessionDelegate {
     }
 }
 
+class RealmManager : NSObject {
+    class func setupRealmInApp() -> Realm {
+        func fileInDocumentsDirectory(filename: String) -> String {
+            let documentsURL = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)[0]
+            let fileURL = documentsURL.URLByAppendingPathComponent(filename)
+            return fileURL.path!
+        }
+    
+        let realmPath: String = fileInDocumentsDirectory("default.realm")
+        Realm.Configuration.defaultConfiguration.path = realmPath
+        return try! Realm(path: realmPath)
+    }
+}

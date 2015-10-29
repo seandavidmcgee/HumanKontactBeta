@@ -30,7 +30,7 @@ var contactInit = 0
 var first: Bool = true
 var returnFromResults = Bool()
 
-class SearchController: WKInterfaceController, ContactRowDelegate, RecentsDelegate {
+class SearchController: WKInterfaceController, ContactRowDelegate {
     @IBOutlet weak var headerGroup: WKInterfaceGroup!
     @IBOutlet weak var contactsTable: WKInterfaceTable!
     @IBOutlet weak var loadingImage: WKInterfaceImage!
@@ -48,6 +48,8 @@ class SearchController: WKInterfaceController, ContactRowDelegate, RecentsDelega
     
     override func awakeWithContext(context: AnyObject?) {
         super.awakeWithContext(context)
+        let appDelegate = WKExtension.sharedExtension().delegate as! ExtensionDelegate
+        appDelegate.recentsDelegate = self
         self._loadMoreButton.setHidden(true)
         self.loadingImage!.setImageNamed("circleani1_")
         if context?.value != "No" {
@@ -55,12 +57,20 @@ class SearchController: WKInterfaceController, ContactRowDelegate, RecentsDelega
         } else {
             returnFromResults = true
         }
+        
         self.timelineQueue()
     }
     
     override func willActivate() {
-        People.people = People.realm.sorted("indexedOrder", ascending: true)
-        People.contacts = People.realm.filter("recent == true").sorted("recentIndex", ascending: false)
+        if People.realm != peopleRealm.objects(HKPerson) {
+            People.realm = peopleRealm.objects(HKPerson)
+        }
+        if People.people != People.realm.sorted("indexedOrder", ascending: true) {
+            People.people = People.realm.sorted("indexedOrder", ascending: true)
+        }
+        if People.contacts != People.realm.filter("recent == true").sorted("recentIndex", ascending: false) {
+            People.contacts = People.realm.filter("recent == true").sorted("recentIndex", ascending: false)
+        }
         
         self.reloadTableData(false)
     }
@@ -73,16 +83,9 @@ class SearchController: WKInterfaceController, ContactRowDelegate, RecentsDelega
     }
 
     func lookupIndex() {
-        lookupWatchController = KannuuIndexController(controllerMode: .Lookup, indexFilePath: indexFile, numberOfOptions: 26, numberOfBranchSelections: 999)
         keyValues = lookupWatchController!.options!
         self.roundToFour(keyValues.count)
         overFlow = self.remFromFour(keyValues.count)
-    }
-    
-    internal var indexFile : String {
-        let documentsURL = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)[0]
-        let hkIndexPath = documentsURL.path!.stringByAppendingPathComponent("HKIndex")
-        return hkIndexPath
     }
     
     func timelineQueue() {
@@ -100,7 +103,6 @@ class SearchController: WKInterfaceController, ContactRowDelegate, RecentsDelega
                     self.loadingImage!.stopAnimating()
                     self.loadingImage!.setHidden(true)
                     self.keyboardButton!.setEnabled(true)
-                    self.reloadTableData(false)
             })
             
             }.start
@@ -115,6 +117,7 @@ class SearchController: WKInterfaceController, ContactRowDelegate, RecentsDelega
     }
     
     func reloadTableData(more: Bool) {
+        print("test")
         if People.contacts.count < 15 {
             contactLimit = People.contacts.count
         }
@@ -483,12 +486,12 @@ class SearchController: WKInterfaceController, ContactRowDelegate, RecentsDelega
     
     func addRecentSubTask(key: String) {
         let person = peopleRealm.objectForPrimaryKey(HKPerson.self, key: key)
-        let recentIndexCount = People.contacts.first?.recentIndex
+        let recentIndexCount = People.contacts.first!.recentIndex
         
         do {
             peopleRealm.beginWrite()
             person!.recent = true
-            person!.recentIndex = recentIndexCount! + 1
+            person!.recentIndex = recentIndexCount + 1
             try peopleRealm.commitWrite()
         } catch let error as NSError {
             print("Error moving file: \(error.description)")
@@ -502,8 +505,12 @@ protocol ContactRowDelegate {
     func rightButtonWasPressed(button: WKInterfaceButton, tag: Int, image: Bool)
 }
 
+class SearchControllerContext {
+    var delegate: RecentsDelegate? = nil
+}
+
 protocol RecentsDelegate {
-    func timelineQueue()
+    func reloadTableData(more: Bool)
 }
 
 class TripleColumnRowController: NSObject {

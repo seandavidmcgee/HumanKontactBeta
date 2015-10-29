@@ -13,14 +13,11 @@ var lookupWatchController : KannuuIndexController? = nil
 
 class ExtensionDelegate: NSObject, WKExtensionDelegate, WCSessionDelegate {
     var session : WCSession!
-    var recentsDelegate: RecentsDelegate?
     var fileCount = 0
+    var recentsDelegate: SearchController?
     
     func applicationDidFinishLaunching() {
         // Perform any final initialization of your application.
-    }
-
-    func applicationDidBecomeActive() {
         if (WCSession.isSupported()) {
             session = WCSession.defaultSession()
             session.delegate = self
@@ -28,15 +25,33 @@ class ExtensionDelegate: NSObject, WKExtensionDelegate, WCSessionDelegate {
         }
         
         if session.reachable == false {
-            self.showAlertControllerWithStyle(WKAlertControllerStyle.Alert)
-            
+            print("not reachable")
             return
         }
+        
+        let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
+        let docsDir = dirPaths[0] as String
+        let filemgr = NSFileManager.defaultManager()
+        let indexFilePath = self.indexFile
+        
+        if filemgr.fileExistsAtPath(docsDir + "/default.realm") {
+            lookupWatchController = KannuuIndexController(controllerMode: .Lookup, indexFilePath: indexFilePath, numberOfOptions: 26, numberOfBranchSelections: 999)
+        }
+    }
+
+    func applicationDidBecomeActive() {
+
     }
     
     func applicationWillResignActive() {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, etc.
+    }
+    
+    internal var indexFile : String {
+        let documentsURL = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)[0]
+        let hkIndexPath = documentsURL.path!.stringByAppendingPathComponent("HKIndex")
+        return hkIndexPath
     }
     
     // Received message from iPhone
@@ -66,14 +81,20 @@ class ExtensionDelegate: NSObject, WKExtensionDelegate, WCSessionDelegate {
     
     func addRecentSubTask(key: String) {
         let person = peopleRealm.objectForPrimaryKey(HKPerson.self, key: key)
-        let recentIndexCount = People.contacts.count
+        var recentIndexCount = Int()
+        if People.contacts.count > 0 {
+            recentIndexCount = People.contacts.first!.recentIndex
+        } else {
+            recentIndexCount = 0
+        }
         
         do {
-            peopleRealm.beginWrite()
+            let realm = ABWatchManager.peopleRealm()
+            realm.beginWrite()
             person!.recent = true
             person!.recentIndex = recentIndexCount + 1
-            recentsDelegate?.timelineQueue()
-            try peopleRealm.commitWrite()
+            try realm.commitWrite()
+            recentsDelegate?.reloadTableData(false)
         } catch let error as NSError {
             print("Error moving file: \(error.description)")
         }
@@ -90,21 +111,6 @@ class ExtensionDelegate: NSObject, WKExtensionDelegate, WCSessionDelegate {
             }) { (error:NSError) -> Void in
                 print(error.localizedDescription)
         }
-    }
-    
-    private func showAlertControllerWithStyle(style: WKAlertControllerStyle!) {
-        let cancelAction = WKAlertAction(
-            title: "Okay",
-            style: WKAlertActionStyle.Cancel) { () -> Void in
-                print("Destructive")
-        }
-        
-        let actions = [cancelAction]
-        InterfaceController().presentAlertControllerWithTitle(
-            "Loading Contacts from iPhone",
-            message: "Please open HumanKontact on your iPhone to sync your contacts for the first time.",
-            preferredStyle: style,
-            actions: actions)
     }
     
     func requestToPhone() {
@@ -148,8 +154,10 @@ class ExtensionDelegate: NSObject, WKExtensionDelegate, WCSessionDelegate {
     }
     
     func continueToSearch() {
-        if fileCount > 6 {
-            WKInterfaceController.reloadRootControllersWithNames(["Search"], contexts: nil)
+        if fileCount >= 7 {
+            let indexFilePath = self.indexFile
+            lookupWatchController = KannuuIndexController(controllerMode: .Lookup, indexFilePath: indexFilePath, numberOfOptions: 26, numberOfBranchSelections: 999)
+            WKExtension.sharedExtension().rootInterfaceController!.pushControllerWithName("Search", context: nil)
         }
     }
 }

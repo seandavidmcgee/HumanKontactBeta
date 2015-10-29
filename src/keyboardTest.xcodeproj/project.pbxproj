@@ -147,7 +147,7 @@
 		75F7A8441BC461540007B654 /* libkannuu.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75F7A8431BC461540007B654 /* libkannuu.a */; };
 		75F8025B1B275530008DCBCE /* TaskQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F8025A1B275530008DCBCE /* TaskQueue.swift */; };
 		75FC10FD1B1A3EBF00AD99F4 /* MasterSearchController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FC10FC1B1A3EBF00AD99F4 /* MasterSearchController.swift */; };
-		75FEF6961BE173E5003EDFAA /* libwatchkannuu-sim.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75DA7E181BCECFBC004DF511 /* libwatchkannuu-sim.a */; };
+		75FEF6A11BE2B2FD003EDFAA /* libwatchkannuu-release.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75DA7E161BCECA13004DF511 /* libwatchkannuu-release.a */; };
 		8EF27BBB1AAFFD7400F93112 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EF27BBA1AAFFD7400F93112 /* AppDelegate.swift */; };
 		8EF27BC01AAFFD7400F93112 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8EF27BBE1AAFFD7400F93112 /* Main.storyboard */; };
 		8EF27BC21AAFFD7400F93112 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8EF27BC11AAFFD7400F93112 /* Images.xcassets */; };
@@ -435,7 +435,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				75F43B1C1BE01FE800C7B75A /* Realm.framework in Frameworks */,
-				75FEF6961BE173E5003EDFAA /* libwatchkannuu-sim.a in Frameworks */,
+				75FEF6A11BE2B2FD003EDFAA /* libwatchkannuu-release.a in Frameworks */,
 				75F43B1D1BE01FE800C7B75A /* RealmSwift.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

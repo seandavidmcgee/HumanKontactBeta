@@ -71,9 +71,6 @@ class KeyboardControllerSeventh: WKInterfaceController {
         if activeSearch.isEmpty {
             WKInterfaceController.reloadRootControllersWithNames(["Landing"], contexts: ["No"])
             first = true
-            People.people = People.realm.sorted("indexedOrder", ascending: true)
-            People.contacts = People.realm.filter("recent == true").sorted("recentIndex", ascending: false)
-            contactLimit = 15
         } else {
             self.presentControllerWithName("Results", context: "No")
             firstActivation = true

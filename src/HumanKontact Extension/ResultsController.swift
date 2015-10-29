@@ -31,9 +31,7 @@ class ResultsController: WKInterfaceController, ContactRowDelegate {
     
     override func willActivate() {
         super.willActivate()
-        if People.people.count < 15 {
-            contactLimit = People.people.count
-        }
+    
     }
     
     override func didDeactivate() {
@@ -51,7 +49,6 @@ class ResultsController: WKInterfaceController, ContactRowDelegate {
             queue.add(delay: 0, duration: 1.0, execution: {
                 // some code that will take assumed 2.0 seconds
                 self.loadingContacts()
-                self.indexReset()
                 }, completion: {
                     // some code that will excutes after 'delay' + 'duration'
                     self.loadingImage!.stopAnimating()
@@ -74,10 +71,13 @@ class ResultsController: WKInterfaceController, ContactRowDelegate {
     }
     
     func reloadTableData(more: Bool) {
+        if People.people.count < 15 {
+            peopleLimit = People.people.count
+        }
         if more == true {
             contactsTable.insertRowsAtIndexes(indexSet, withRowType: "TripleColumnRowController")
         } else {
-            let contactRows = Int(self.roundUp(contactLimit, divisor: 3) / 3)
+            let contactRows = Int(self.roundUp(peopleLimit, divisor: 3) / 3)
             contactsTable.setNumberOfRows(contactRows, withRowType: "TripleColumnRowController")
         }
         for _ in 0..<1 {
@@ -353,12 +353,17 @@ class ResultsController: WKInterfaceController, ContactRowDelegate {
     
     func addRecentSubTask(key: String) {
         let person = peopleRealm.objectForPrimaryKey(HKPerson.self, key: key)
-        let recentIndexCount = People.contacts.first?.recentIndex
+        var recentIndexCount = Int()
         
+        if People.contacts.count > 0 {
+            recentIndexCount = People.contacts.first!.recentIndex
+        } else {
+            recentIndexCount = 0
+        }
         do {
             peopleRealm.beginWrite()
             person!.recent = true
-            person!.recentIndex = recentIndexCount! + 1
+            person!.recentIndex = recentIndexCount + 1
             try peopleRealm.commitWrite()
         } catch let error as NSError {
             print("Error moving file: \(error.description)")

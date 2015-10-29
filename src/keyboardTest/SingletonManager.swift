@@ -25,6 +25,7 @@ class GlobalVariables {
     var myResults = [AnyObject]()
     var objectKeys = [AnyObject]()
     var sortOrdering = "alpha"
+    var realm = RealmManager.setupRealmInApp()
     
     // Here is how you would get to it without there being a global collision of variables.
     // It is a globally accessable parameter that is specific to the class.
