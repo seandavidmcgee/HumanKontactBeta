@@ -316,8 +316,19 @@ class SwiftPromptsView: UIView
     
     func callActionSheet(callUser: String) {
         let hokusai = Hokusai()
-        var hkPerson = try! Realm().objectForPrimaryKey(HKPerson.self, key: callUser)
+        var hkPerson = RealmManager.setupRealmInApp().objectForPrimaryKey(HKPerson.self, key: callUser)
         var numbersToSelect = hkPerson!.phoneNumbers
+        
+        do {
+            let realm = RealmManager.setupRealmInApp()
+            let totalCount = realm.objects(HKPerson).count
+            let usageWeight: Double = Double(0.75) * (Double(totalCount - hkPerson!.indexedOrder) / Double(totalCount))
+            realm.beginWrite()
+            hkPerson!.flUsageWeight += usageWeight + Double(1 - (hkPerson!.indexedOrder / totalCount))
+            realm.commitWrite()
+        } catch {
+            print("Something went wrong!")
+        }
         
         for number in numbersToSelect {
             // Add a button with a closure
@@ -354,8 +365,19 @@ class SwiftPromptsView: UIView
     
     func messageActionSheet(messageUser: String) {
         let hokusai = Hokusai()
-        var hkPerson = try! Realm().objectForPrimaryKey(HKPerson.self, key: messageUser)
+        var hkPerson = RealmManager.setupRealmInApp().objectForPrimaryKey(HKPerson.self, key: messageUser)
         var numbersToSelect = hkPerson!.phoneNumbers
+        
+        do {
+            let realm = RealmManager.setupRealmInApp()
+            let totalCount = realm.objects(HKPerson).count
+            let usageWeight: Double = Double(0.5) * (Double(totalCount - hkPerson!.indexedOrder) / Double(totalCount))
+            realm.beginWrite()
+            hkPerson!.flUsageWeight += usageWeight + Double(1 - (hkPerson!.indexedOrder / totalCount))
+            realm.commitWrite()
+        } catch {
+            print("Something went wrong!")
+        }
         
         for number in numbersToSelect {
             // Add a button with a closure
@@ -392,8 +414,19 @@ class SwiftPromptsView: UIView
     
     func emailActionSheet(emailUser: String) {
         let hokusai = Hokusai()
-        var hkPerson = try! Realm().objectForPrimaryKey(HKPerson.self, key: emailUser)
+        var hkPerson = RealmManager.setupRealmInApp().objectForPrimaryKey(HKPerson.self, key: emailUser)
         var emailsToSelect = hkPerson!.emails
+        
+        do {
+            let realm = RealmManager.setupRealmInApp()
+            let totalCount = realm.objects(HKPerson).count
+            let usageWeight: Double = Double(0.25) * (Double(totalCount - hkPerson!.indexedOrder) / Double(totalCount))
+            realm.beginWrite()
+            hkPerson!.flUsageWeight += usageWeight + Double(1 - (hkPerson!.indexedOrder / totalCount))
+            realm.commitWrite()
+        } catch {
+            print("Something went wrong!")
+        }
         
         for email in emailsToSelect {
             // Add a button with a closure
@@ -429,17 +462,6 @@ class SwiftPromptsView: UIView
     }
     
     private func callNumber(phoneNumber:String) {
-        do {
-            let realm = RealmManager.setupRealmInApp()
-            let totalCount = realm.objects(HKPerson).count
-            let usageWeight: Double = Double(0.75) * (Double(totalCount - person.indexedOrder) / Double(totalCount))
-            realm.beginWrite()
-            person.flUsageWeight += usageWeight + Double(1 - (person.indexedOrder / totalCount))
-            realm.commitWrite()
-        } catch {
-            print("Something went wrong!")
-        }
-        
         let strippedPhoneNumber = phoneNumber.stringByReplacingOccurrencesOfString("[^0-9 ]", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range:nil);
         var cleanNumber = strippedPhoneNumber.removeWhitespace()
         cleanNumber = cleanNumber.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
@@ -462,17 +484,6 @@ class SwiftPromptsView: UIView
     }
     
     private func textNumber(phoneNumber:String) {
-        do {
-            let realm = RealmManager.setupRealmInApp()
-            let totalCount = realm.objects(HKPerson).count
-            let usageWeight: Double = Double(0.5) * (Double(totalCount - person.indexedOrder) / Double(totalCount))
-            realm.beginWrite()
-            person.flUsageWeight += usageWeight + Double(1 - (person.indexedOrder / totalCount))
-            realm.commitWrite()
-        } catch {
-            print("Something went wrong!")
-        }
-        
         let strippedPhoneNumber = phoneNumber.stringByReplacingOccurrencesOfString("[^0-9 ]", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range:nil);
         var cleanNumber = strippedPhoneNumber.removeWhitespace()
         cleanNumber = cleanNumber.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
@@ -495,17 +506,6 @@ class SwiftPromptsView: UIView
     }
     
     private func emailPressed(email:String) {
-        do {
-            let realm = RealmManager.setupRealmInApp()
-            let totalCount = realm.objects(HKPerson).count
-            let usageWeight: Double = Double(0.25) * (Double(totalCount - person.indexedOrder) / Double(totalCount))
-            realm.beginWrite()
-            person.flUsageWeight += usageWeight + Double(1 - (person.indexedOrder / totalCount))
-            realm.commitWrite()
-        } catch {
-            print("Something went wrong!")
-        }
-        
         if let emailUrl:NSURL = NSURL(string: "mailto:\(email)") {
             let application:UIApplication = UIApplication.sharedApplication()
             if (application.canOpenURL(emailUrl)) {

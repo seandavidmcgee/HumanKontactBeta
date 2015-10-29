@@ -22,6 +22,7 @@
 		752E675F1B1F894500D96230 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 752E675E1B1F894500D96230 /* LaunchScreen.storyboard */; };
 		75373C021BDEA55E000A97FD /* Realm.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 75193BAB1BC3072C00757744 /* Realm.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		75373C041BDEA55E000A97FD /* RealmSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 75193BAC1BC3072C00757744 /* RealmSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		753A3E951BE2D9500030169C /* libwatchkannuu-release.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75DA7E161BCECA13004DF511 /* libwatchkannuu-release.a */; };
 		7550E8AA1B726C6F006B484B /* GoogleWearAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7550E8A81B726C6F006B484B /* GoogleWearAlert.swift */; };
 		7550E8AB1B726C6F006B484B /* GoogleWearAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7550E8A91B726C6F006B484B /* GoogleWearAlertView.swift */; };
 		7550E8B01B726C98006B484B /* errorIcon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7550E8AC1B726C98006B484B /* errorIcon@2x.png */; };
@@ -147,7 +148,6 @@
 		75F7A8441BC461540007B654 /* libkannuu.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75F7A8431BC461540007B654 /* libkannuu.a */; };
 		75F8025B1B275530008DCBCE /* TaskQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F8025A1B275530008DCBCE /* TaskQueue.swift */; };
 		75FC10FD1B1A3EBF00AD99F4 /* MasterSearchController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FC10FC1B1A3EBF00AD99F4 /* MasterSearchController.swift */; };
-		75FEF6A11BE2B2FD003EDFAA /* libwatchkannuu-release.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75DA7E161BCECA13004DF511 /* libwatchkannuu-release.a */; };
 		8EF27BBB1AAFFD7400F93112 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EF27BBA1AAFFD7400F93112 /* AppDelegate.swift */; };
 		8EF27BC01AAFFD7400F93112 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8EF27BBE1AAFFD7400F93112 /* Main.storyboard */; };
 		8EF27BC21AAFFD7400F93112 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8EF27BC11AAFFD7400F93112 /* Images.xcassets */; };
@@ -435,7 +435,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				75F43B1C1BE01FE800C7B75A /* Realm.framework in Frameworks */,
-				75FEF6A11BE2B2FD003EDFAA /* libwatchkannuu-release.a in Frameworks */,
+				753A3E951BE2D9500030169C /* libwatchkannuu-release.a in Frameworks */,
 				75F43B1D1BE01FE800C7B75A /* RealmSwift.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
