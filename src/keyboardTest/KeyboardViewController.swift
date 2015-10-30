@@ -9,6 +9,7 @@
 import UIKit
 import Foundation
 import RealmSwift
+import SwiftyUserDefaults
 
 var entrySoFar : String? = nil
 var nameSearch = UITextField()
@@ -19,9 +20,9 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
     var keyPresses: Int = 1
     var deleteInput: UIButton!
     var clearSearch: UIButton!
-    var moreOptionsForward: UIButton! = UIButton()
-    var moreOptionsBack: UIButton! = UIButton()
-    var altKeyboard: UIButton! = UIButton()
+    var moreOptionsForward = UIButton()
+    var moreOptionsBack = UIButton()
+    var altKeyboard = UIButton()
     var optionsControl: Bool = false
     var moreKeyPresses: Int = 0
     var firstRowKeyStrings = ""
@@ -30,23 +31,41 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
     var buttonXFirst: CGFloat!
     var buttonXSecond: CGFloat!
     var buttonXThird: CGFloat!
+    var fieldXSearch: CGFloat!
+    var altXKeyboard: CGFloat!
+    var deleteX: CGFloat!
+    var dismissX: CGFloat!
+    var clearX: CGFloat!
+    var paddingW: CGFloat!
+    var moreOptionsX: CGFloat!
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        self.keyboardOrient()
-        if GlobalVariables.sharedManager.keyboardFirst {
-            self.populateKeys()
+        if GlobalVariables.sharedManager.keyboardFirst && !GlobalVariables.sharedManager.keyboardOrientChanged {
             GlobalVariables.sharedManager.keyboardFirst = false
+            populateKeys()
+        } else if GlobalVariables.sharedManager.keyboardOrientChanged {
+            keyboardOrient()
+            for view in self.view.subviews {
+                if view.accessibilityLabel == "keyButton" || view.accessibilityLabel == "altKeys" {
+                    view.removeFromSuperview()
+                } else if view.accessibilityLabel == "keyBlur" || view.accessibilityLabel == "searchBlur" {
+                    view.removeFromSuperview()
+                } else if view.accessibilityLabel == "searchField" {
+                    view.removeFromSuperview()
+                }
+            }
+            createKeyboard("changed")
+            populateKeys()
+            GlobalVariables.sharedManager.keyboardFirst = false
+            GlobalVariables.sharedManager.keyboardOrientChanged = false
         }
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         keyboardOrient()
-        createKeyboard()
-        dismissKeyboard()
-        deleteBtn()
-        navKeys()
+        createKeyboard("default")
     }
     
     override func didReceiveMemoryWarning() {
@@ -55,18 +74,26 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
     }
     
     func keyboardOrient() {
-        if leftHanded == false {
-            buttonXFirst = 250
-            buttonXSecond = 250
-            buttonXThird = 250
-        } else if leftHanded == true {
-            buttonXFirst = 365
-            buttonXSecond = 365
-            buttonXThird = 365
-        } else {
-            buttonXFirst = 250
-            buttonXSecond = 250
-            buttonXThird = 250
+        if Defaults[.orient] == "right" {
+            buttonXFirst = 260
+            buttonXSecond = buttonXFirst
+            buttonXThird = buttonXSecond
+            fieldXSearch = 10
+            altXKeyboard = 0
+            dismissX = self.view.frame.width - 40
+            deleteX = dismissX - 54
+            paddingW = 15
+            moreOptionsX = self.view.frame.width - 260
+        } else if Defaults[.orient] == "left" {
+            buttonXFirst = self.view.frame.width - 10
+            buttonXSecond = buttonXFirst
+            buttonXThird = buttonXSecond
+            fieldXSearch = 111
+            altXKeyboard = self.view.frame.width - 50
+            dismissX = 10
+            deleteX = 64
+            paddingW = 41
+            moreOptionsX = 10
         }
     }
     
@@ -142,58 +169,76 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
             self.refreshData()
             _ = NSTimer.scheduledTimerWithTimeInterval(0.2, target: self, selector: Selector("singleReset"), userInfo: nil, repeats: false)
         }
+        GlobalVariables.sharedManager.keyboardFirst = true
     }
     
-    func createKeyboard() {
-        let BlurredKeyBG = UIImage(named: "BlurredKeyBG")
-        let BlurredKeyBGView = UIImageView(image: BlurredKeyBG)
-        BlurredKeyBGView.frame = self.view.frame
-        BlurredKeyBGView.contentMode = UIViewContentMode.ScaleAspectFill
-        BlurredKeyBGView.clipsToBounds = true
+    func createKeyboard(orient: String) {
+        if orient == "default" {
+            let BlurredKeyBG = UIImage(named: "BlurredKeyBG")
+            let BlurredKeyBGView = UIImageView(image: BlurredKeyBG)
+            BlurredKeyBGView.frame = self.view.frame
+            BlurredKeyBGView.contentMode = UIViewContentMode.ScaleAspectFill
+            BlurredKeyBGView.clipsToBounds = true
         
-        self.view.addSubview(BlurredKeyBGView)
+            self.view.addSubview(BlurredKeyBGView)
+        }
         
-        nameSearch = UITextField(frame: CGRectMake(10.0, 10.0, self.view.frame.width - 122, 40.0))
+        nameSearch = UITextField(frame: CGRectMake(fieldXSearch, 10.0, self.view.frame.width - 122, 40.0))
         nameSearch.backgroundColor = UIColor.clearColor()
         nameSearch.borderStyle = UITextBorderStyle.None
         nameSearch.textColor = UIColor(white: 1.0, alpha: 1.0)
         nameSearch.layer.cornerRadius = 12
+        
+        if Defaults[.orient] == "right" {
+            clearX = nameSearch.frame.maxX - 36
+        } else if Defaults[.orient] == "left" {
+            clearX = nameSearch.frame.minX
+        }
+        
         let blur = UIBlurEffect(style: UIBlurEffectStyle.Light)
         _ = UIVibrancyEffect(forBlurEffect: blur)
         let blurView = UIVisualEffectView(effect: blur)
         blurView.frame = nameSearch.frame
         blurView.layer.cornerRadius = 12
         blurView.clipsToBounds = true
-        let paddingView = UIView(frame: CGRectMake(0, 0, 15, 40))
+        blurView.accessibilityLabel = "searchBlur"
+        let paddingView = UIView(frame: CGRectMake(0, 0, paddingW, 40))
         nameSearch.leftView = paddingView
         nameSearch.leftViewMode = UITextFieldViewMode.Always
         nameSearch.enabled = false
-        clearSearch = UIButton(frame: CGRect(x: nameSearch.frame.width - 36, y: 12, width: 36, height: 36))
+        nameSearch.font = UIFont(name: "HelveticaNeue-Regular", size: 19)
+        nameSearch.accessibilityLabel = "searchField"
+        clearSearch = UIButton(frame: CGRect(x: clearX, y: 12, width: 36, height: 36))
         clearSearch.setImage(UIImage(named: "Clear"), forState: UIControlState.Disabled)
         clearSearch.setImage(UIImage(named: "Clear"), forState: UIControlState.Normal)
         clearSearch.imageEdgeInsets = UIEdgeInsetsMake(-10, -10, -10, -10)
         clearSearch.enabled = false
         clearSearch.addTarget(self, action: "clearNameSearch", forControlEvents: UIControlEvents.TouchUpInside)
+        clearSearch.accessibilityLabel = "altKeys"
         
         self.view.addSubview(blurView)
         self.view.addSubview(nameSearch)
         self.view.addSubview(clearSearch)
         
-        altKeyboard.frame = CGRect(x: 0, y: 262, width: 50, height: 50)
+        altKeyboard.frame = CGRect(x: altXKeyboard, y: 262, width: 50, height: 50)
         altKeyboard.setImage(UIImage(named: "keyAlt"), forState: UIControlState.Normal)
         altKeyboard.imageEdgeInsets = UIEdgeInsetsMake(-10, -10, -10, -10)
         altKeyboard.addTarget(self, action: "useNormalKeyboard", forControlEvents: UIControlEvents.TouchUpInside)
+        altKeyboard.accessibilityLabel = "altKeys"
         
         self.view.addSubview(altKeyboard)
+        self.dismissKeyboard(orient)
     }
     
-    func dismissKeyboard() {
-        let dismissKeyboard = UIButton(frame: CGRect(x: nameSearch.frame.width + 75, y: 20, width: 30, height: 30))
+    func dismissKeyboard(orient: String) {
+        let dismissKeyboard = UIButton(frame: CGRect(x: dismissX, y: 20, width: 30, height: 30))
         dismissKeyboard.setImage(UIImage(named: "KeyboardReverse"), forState: UIControlState.Normal)
         dismissKeyboard.imageEdgeInsets = UIEdgeInsetsMake(-10, -10, -10, -10)
         dismissKeyboard.addTarget(self, action: "backToInitialView", forControlEvents: UIControlEvents.TouchUpInside)
+        dismissKeyboard.accessibilityLabel = "altKeys"
         
         self.view.addSubview(dismissKeyboard)
+        self.deleteBtn(orient)
     }
     
     func useNormalKeyboard() {
@@ -203,26 +248,34 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
         normalSearchController.active = true
     }
     
-    func deleteBtn() {
-        deleteInput = UIButton(frame: CGRect(x: nameSearch.frame.width + 30, y: 18, width: 26, height: 26))
-        deleteInput.setImage(UIImage(named: "Delete"), forState: UIControlState.Disabled)
-        deleteInput.setImage(UIImage(named: "Delete"), forState: UIControlState.Normal)
+    func deleteBtn(orient: String) {
+        deleteInput = UIButton(frame: CGRect(x: deleteX, y: 18, width: 26, height: 26))
+        if Defaults[.orient] == "right" {
+            deleteInput.setImage(UIImage(named: "Delete"), forState: UIControlState.Disabled)
+            deleteInput.setImage(UIImage(named: "Delete"), forState: UIControlState.Normal)
+        } else {
+            deleteInput.setImage(UIImage(named: "DeleteAlt"), forState: UIControlState.Disabled)
+            deleteInput.setImage(UIImage(named: "DeleteAlt"), forState: UIControlState.Normal)
+        }
         deleteInput.imageEdgeInsets = UIEdgeInsetsMake(-10, -10, -10, -10)
         deleteInput.enabled = false
         deleteInput.addTarget(self, action: "deleteSearchInput:", forControlEvents: .TouchUpInside)
+        deleteInput.accessibilityLabel = "altKeys"
         
         self.view.addSubview(deleteInput)
+        self.navKeys()
     }
     
     func populateKeys() {
         for index in 0..<GlobalVariables.sharedManager.objectKeys.count {
             if (index < 3) {
-                let keyButton1 = UIButton(frame: CGRect(x: self.view.frame.width - buttonXFirst, y: 75, width: 72, height: 52))
-                buttonXFirst = buttonXFirst - 82
+                let keyButton1 = UIButton(frame: CGRect(x: self.view.frame.width - buttonXFirst, y: 75, width: 77, height: 52))
+                buttonXFirst = buttonXFirst - 87
                 
                 keyButton1.layer.cornerRadius = keyButton1.frame.width / 6.0
                 keyButton1.setTitleColor(UIColor.whiteColor(), forState: UIControlState.Normal)
                 keyButton1.backgroundColor = UIColor.clearColor()
+                keyButton1.titleLabel!.font = UIFont(name: "HelveticaNeue-Regular", size: 17.0)
                 firstRowKeyStrings = "\(GlobalVariables.sharedManager.objectKeys[index])"
                 keyButton1.setTitle(firstRowKeyStrings.capitalizedString, forState: UIControlState.Normal)
                 keyButton1.setTitleColor(UIColor(white: 0.0, alpha: 1.0 ), forState: UIControlState.Highlighted)
@@ -231,29 +284,32 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
                 keyButton1.titleLabel!.numberOfLines = 2
                 keyButton1.titleLabel!.text = firstRowKeyStrings.capitalizedString
                 keyButton1.tag = index
+                keyButton1.accessibilityLabel = "keyButton"
                 let blur = UIBlurEffect(style: UIBlurEffectStyle.Light)
                 _ = UIVibrancyEffect(forBlurEffect: blur)
-                let blurView = UIVisualEffectView(effect: blur)
-                blurView.frame = keyButton1.frame
-                blurView.layer.cornerRadius = keyButton1.frame.width / 6.0
-                blurView.clipsToBounds = true
+                let blurView1 = UIVisualEffectView(effect: blur)
+                blurView1.frame = keyButton1.frame
+                blurView1.layer.cornerRadius = keyButton1.frame.width / 6.0
+                blurView1.clipsToBounds = true
+                blurView1.accessibilityLabel = "keyBlur"
                 buttonsArray.append(keyButton1)
-                buttonsBlurArray.append(blurView)
+                buttonsBlurArray.append(blurView1)
                 
                 keyButton1.addTarget(self, action: "keyPressed:", forControlEvents: UIControlEvents.TouchDown);
                 keyButton1.addTarget(self, action: "buttonNormal:", forControlEvents: UIControlEvents.TouchUpInside);
                 
-                self.view.addSubview(blurView)
+                self.view.addSubview(blurView1)
                 self.view.addSubview(keyButton1)
             }
             
             if (index < 6 && index >= 3) {
-                let keyButton2 = UIButton(frame: CGRect(x: self.view.frame.width - buttonXSecond, y: 137, width: 72, height: 52))
-                buttonXSecond = buttonXSecond - 82
+                let keyButton2 = UIButton(frame: CGRect(x: self.view.frame.width - buttonXSecond, y: 137, width: 77, height: 52))
+                buttonXSecond = buttonXSecond - 87
                 
                 keyButton2.layer.cornerRadius = keyButton2.frame.width / 6.0
                 keyButton2.setTitleColor(UIColor.whiteColor(), forState: UIControlState.Normal)
                 keyButton2.backgroundColor = UIColor.clearColor()
+                keyButton2.titleLabel!.font = UIFont(name: "HelveticaNeue-Regular", size: 17.0)
                 secondRowKeyStrings = "\(GlobalVariables.sharedManager.objectKeys[index])"
                 keyButton2.setTitle(secondRowKeyStrings.capitalizedString, forState: UIControlState.Normal)
                 keyButton2.setTitleColor(UIColor(white: 0.0, alpha: 1.000 ), forState: UIControlState.Highlighted)
@@ -262,29 +318,32 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
                 keyButton2.titleLabel!.numberOfLines = 2
                 keyButton2.titleLabel!.text = secondRowKeyStrings.capitalizedString
                 keyButton2.tag = index
+                keyButton2.accessibilityLabel = "keyButton"
                 let blur = UIBlurEffect(style: UIBlurEffectStyle.Light)
                 _ = UIVibrancyEffect(forBlurEffect: blur)
-                let blurView = UIVisualEffectView(effect: blur)
-                blurView.frame = keyButton2.frame
-                blurView.layer.cornerRadius = keyButton2.frame.width / 6.0
-                blurView.clipsToBounds = true
+                let blurView2 = UIVisualEffectView(effect: blur)
+                blurView2.frame = keyButton2.frame
+                blurView2.layer.cornerRadius = keyButton2.frame.width / 6.0
+                blurView2.clipsToBounds = true
+                blurView2.accessibilityLabel = "keyBlur"
                 buttonsArray.append(keyButton2)
-                buttonsBlurArray.append(blurView)
+                buttonsBlurArray.append(blurView2)
                 
                 keyButton2.addTarget(self, action: "keyPressed:", forControlEvents: UIControlEvents.TouchDown);
                 keyButton2.addTarget(self, action: "buttonNormal:", forControlEvents: UIControlEvents.TouchUpInside);
                 
-                self.view.addSubview(blurView)
+                self.view.addSubview(blurView2)
                 self.view.addSubview(keyButton2)
             }
             
             if (index < 9 && index >= 6) {
-                let keyButton3 = UIButton(frame: CGRect(x: self.view.frame.width - buttonXThird, y: 199, width: 72, height: 52))
-                buttonXThird = buttonXThird - 82
+                let keyButton3 = UIButton(frame: CGRect(x: self.view.frame.width - buttonXThird, y: 199, width: 77, height: 52))
+                buttonXThird = buttonXThird - 87
                 
                 keyButton3.layer.cornerRadius = keyButton3.frame.width / 6.0
                 keyButton3.setTitleColor(UIColor.whiteColor(), forState: UIControlState.Normal)
                 keyButton3.backgroundColor = UIColor.clearColor()
+                keyButton3.titleLabel!.font = UIFont(name: "HelveticaNeue-Regular", size: 17.0)
                 lastRowKeyStrings = "\(GlobalVariables.sharedManager.objectKeys[index])"
                 keyButton3.setTitle(lastRowKeyStrings.capitalizedString, forState: UIControlState.Normal)
                 keyButton3.setTitleColor(UIColor(white: 0.0, alpha: 1.000 ), forState: UIControlState.Highlighted)
@@ -293,19 +352,21 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
                 keyButton3.titleLabel!.numberOfLines = 2
                 keyButton3.titleLabel!.text = lastRowKeyStrings.capitalizedString
                 keyButton3.tag = index
+                keyButton3.accessibilityLabel = "keyButton"
                 let blur = UIBlurEffect(style: UIBlurEffectStyle.Light)
                 _ = UIVibrancyEffect(forBlurEffect: blur)
-                let blurView = UIVisualEffectView(effect: blur)
-                blurView.frame = keyButton3.frame
-                blurView.layer.cornerRadius = keyButton3.frame.width / 6.0
-                blurView.clipsToBounds = true
+                let blurView3 = UIVisualEffectView(effect: blur)
+                blurView3.frame = keyButton3.frame
+                blurView3.layer.cornerRadius = keyButton3.frame.width / 6.0
+                blurView3.clipsToBounds = true
+                blurView3.accessibilityLabel = "keyBlur"
                 buttonsArray.append(keyButton3)
-                buttonsBlurArray.append(blurView)
+                buttonsBlurArray.append(blurView3)
                 
                 keyButton3.addTarget(self, action: "keyPressed:", forControlEvents: UIControlEvents.TouchDown);
                 keyButton3.addTarget(self, action: "buttonNormal:", forControlEvents: UIControlEvents.TouchUpInside);
                 
-                self.view.addSubview(blurView)
+                self.view.addSubview(blurView3)
                 self.view.addSubview(keyButton3)
             }
         }
@@ -315,18 +376,20 @@ class KeyboardViewController: UIViewController, UITextFieldDelegate {
         let backTitle = NSAttributedString(string: "Back", attributes: [NSForegroundColorAttributeName: UIColor.whiteColor(), NSFontAttributeName: UIFont(name: "HelveticaNeue-Thin", size: 17.0)!])
         let moreTitle = NSAttributedString(string: "More", attributes: [NSForegroundColorAttributeName: UIColor.whiteColor(), NSFontAttributeName: UIFont(name: "HelveticaNeue-Thin", size: 17.0)!])
         
-        moreOptionsBack.frame = CGRect(x: self.view.frame.width - 250, y: 273, width: 50, height: 26)
+        moreOptionsBack.frame = CGRect(x: moreOptionsX, y: 273, width: 50, height: 26)
         moreOptionsBack.setAttributedTitle(backTitle, forState: .Normal)
         moreOptionsBack.tag = 998
         moreOptionsBack.hidden = true
         moreOptionsBack.addTarget(self, action: "respondToMore:", forControlEvents: UIControlEvents.TouchUpInside)
-        view.addSubview(moreOptionsBack)
+        moreOptionsBack.accessibilityLabel = "altKeys"
+        self.view.addSubview(moreOptionsBack)
         
-        moreOptionsForward.frame = CGRect(x: self.view.frame.width - 64, y: 273, width: 50, height: 26)
+        moreOptionsForward.frame = CGRect(x: moreOptionsX + 196, y: 273, width: 50, height: 26)
         moreOptionsForward.setAttributedTitle(moreTitle, forState: .Normal)
         moreOptionsForward.tag = 999
         moreOptionsForward.hidden = true
         moreOptionsForward.addTarget(self, action: "respondToMore:", forControlEvents: UIControlEvents.TouchUpInside)
+        moreOptionsForward.accessibilityLabel = "altKeys"
         self.view.addSubview(moreOptionsForward)
     }
     
