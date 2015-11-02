@@ -41,6 +41,8 @@ extension DefaultsKeys {
     static let sort = DefaultsKey<String>("sort")
     static let order = DefaultsKey<String>("order")
     static let backup = DefaultsKey<String>("backup")
+    static let landing = DefaultsKey<String>("landing")
+    static let layout = DefaultsKey<String>("layout")
 }
 
 extension UIColor {

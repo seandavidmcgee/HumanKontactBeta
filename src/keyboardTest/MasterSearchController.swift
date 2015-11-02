@@ -119,7 +119,7 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
         scrollView.delegate = self
         
         bodyView = UIView(frame: CGRectMake(0, 0, screenWidth, screenHeight))
-        bodyView.frame.y += 44
+        bodyView.frame.y += 43
         
         bodyView.addSubview(masterTableView)
         
@@ -226,6 +226,18 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
         
         masterCollectionView.showsVerticalScrollIndicator = true
         masterCollectionView.delaysContentTouches = false
+        
+        if Defaults[.landing] == "recents" {
+            mainPageSwitch.setSelectedIndex(1, animated: true)
+        } else {
+            mainPageSwitch.setSelectedIndex(0, animated: true)
+        }
+        
+        if Defaults[.layout] == "grid" {
+            layoutSwitch.setSelectedIndex(0, animated: true)
+        } else {
+            layoutSwitch.setSelectedIndex(1, animated: true)
+        }
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -255,6 +267,9 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
             self.blurredMenuSnapshot()
         } else {
             self.floatingActionButton.close()
+            bodyView.hidden = false
+            keyboardButton.enabled = true
+            dashTransition.enabled = true
             blurredImageView.removeFromSuperview()
         }
         self.button.showsMenu = !self.button.showsMenu
@@ -264,11 +279,14 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
         var backgroundImage = UIImage()
         var effectImage = UIImage()
         backgroundImage = self.view.snapshot(self.view)
-        blurredImageView.frame = CGRect(x: 0, y: 0, width: self.view.bounds.width, height: self.view.bounds.height)
+        blurredImageView.frame = CGRect(x: 0, y: 52, width: self.view.bounds.width, height: self.view.bounds.height - 52)
         effectImage = backgroundImage.applyDarkEffect()!
         bgSnapshot = effectImage
         blurredImageView.image = effectImage
-        bodyView.addSubview(blurredImageView)
+        view.addSubview(blurredImageView)
+        bodyView.hidden = true
+        keyboardButton.enabled = false
+        dashTransition.enabled = false
     }
     
     func numberOfCells(liquidFloatingActionButton: LiquidFloatingActionButton) -> Int {
@@ -341,7 +359,7 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func mainSwitchValueDidChange(sender:DGRunkeeperSwitch) {
-        if sender.selectedIndex == 0 {
+        if sender.selectedIndex == 1 {
             if contactsSearchController.active {
                 GlobalVariables.sharedManager.controller.view.hidden = true
             }
@@ -369,7 +387,7 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
                 masterTableView.reloadData()
                 masterCollectionView.reloadData()
             }
-        } else if sender.selectedIndex == 1 {
+        } else if sender.selectedIndex == 0 {
             if isViewLoaded() {
                 let center: CGPoint = {
                     let itemFrame = self.navigationController?.navigationBar.frame
@@ -484,14 +502,13 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
         favsBtn.imageEdgeInsets = UIEdgeInsetsMake(-10, -10, -10, -10)
         favsBtn.addTarget(self, action: Selector("showFavoritesModal"), forControlEvents:  UIControlEvents.TouchUpInside)
         
-        mainPageSwitch.leftTitle = "Recents"
-        mainPageSwitch.rightTitle = "Contacts"
+        mainPageSwitch.leftTitle = "Contacts"
+        mainPageSwitch.rightTitle = "Recents"
         
         mainPageSwitch.backgroundColor = .whiteColor()
         mainPageSwitch.selectedBackgroundColor = UIColor(red: 0/255, green: 0/255, blue: 13/255, alpha: 1.0)
         mainPageSwitch.titleColor = UIColor(red: 0/255, green: 0/255, blue: 13/255, alpha: 1.0)
         mainPageSwitch.selectedTitleColor = .whiteColor()
-        mainPageSwitch.setSelectedIndex(1, animated: true)
         mainPageSwitch.titleFont = UIFont(name: "AvenirNext-Regular", size: 15.0)
         mainPageSwitch.frame = CGRect(x: 30.0, y: 40.0, width: 200.0, height: 30.0)
         mainPageSwitch.addTarget(self, action: Selector("mainSwitchValueDidChange:"), forControlEvents: .ValueChanged)
@@ -512,7 +529,6 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
         layoutSwitch.backgroundColor = UIColor(red: 251.0/255.0, green: 33.0/255.0, blue: 85.0/255.0, alpha: 1.0)
         layoutSwitch.selectedBackgroundColor = .whiteColor()
         layoutSwitch.titleColor = .whiteColor()
-        layoutSwitch.setSelectedIndex(0, animated: true)
         layoutSwitch.selectedTitleColor = UIColor(red: 251.0/255.0, green: 33.0/255.0, blue: 85.0/255.0, alpha: 1.0)
         layoutSwitch.titleFont = UIFont(name: "AvenirNext-Regular", size: 13.0)
         layoutSwitch.frame = CGRect(x: ((view.frame.width/2) - 75), y: 12.0, width: 150.0, height: 30.0)
@@ -563,8 +579,8 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
     }
     
    @IBAction func keyboardButtonClicked() {
-        if (mainPageSwitch.selectedIndex == 0) {
-            mainPageSwitch.setSelectedIndex(1, animated: true)
+        if (mainPageSwitch.selectedIndex == 1) {
+            mainPageSwitch.setSelectedIndex(0, animated: true)
         }
         if GlobalVariables.sharedManager.keyboardFirst == false && contactsSearchController.active == true {
             GlobalVariables.sharedManager.controller.view.hidden = false
@@ -602,6 +618,8 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
         let cellIdentifier:String = "FriendTableViewCell"
         let cell: FriendTableViewCell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as! FriendTableViewCell
         cell.selectionStyle = UITableViewCellSelectionStyle.None
+        
+        cell.contentView.backgroundColor = UIColor(hexString: hkPerson.nameColor).colorWithAlphaComponent(0.08)
         
         cell.photoImageView!.layer.borderColor = UIColor(hexString: hkPerson.nameColor).CGColor
         cell.backgroundColorView.backgroundColor = UIColor(hexString: hkPerson.nameColor)

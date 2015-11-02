@@ -48,6 +48,7 @@ class FriendTableViewCell: UITableViewCell, UIScrollViewDelegate {
         let screenWidth = screenSize.width
         
         self.frame = CGRect(x: 0, y: 0, width: screenWidth, height: 74)
+        self.layer.addBorder(.Bottom, color: UIColor(hex: 0x00000d), thickness: 1)
         self.backgroundColor = UIColor.clearColor()
         self.contentView.backgroundColor = UIColor.clearColor()
         configureView()
@@ -63,10 +64,16 @@ class FriendTableViewCell: UITableViewCell, UIScrollViewDelegate {
         friendCardView.frame = CGRect(x: 36, y: 0, width: self.frame.width - 36, height: self.frame.height)
         friendCardView.layer.cornerRadius = radius
         friendCardView.tag = 94
-        friendCardView.layer.addBorder(.Bottom, color: UIColor(red: 245/255, green: 246/255, blue: 247/255, alpha: 0.4), thickness: 0.5)
         
         backgroundClipView.frame = CGRect(x: 0, y: 0, width: 52, height: 52)
         backgroundClipView.clipsToBounds = true
+        let shadowPath = UIBezierPath(roundedRect: backgroundClipView.bounds, cornerRadius: backgroundClipView.frame.width/2)
+        backgroundClipView.layer.shadowColor = UIColor(red: 0/255, green: 0/255, blue: 13/255, alpha: 1.0).CGColor
+        backgroundClipView.layer.shadowOffset = CGSize(width: 3, height: 5);
+        backgroundClipView.layer.shadowOpacity = 0.7
+        backgroundClipView.layer.shadowRadius = 5
+        backgroundClipView.layer.shadowPath = shadowPath.CGPath
+        backgroundClipView.layer.masksToBounds = false
         
         backgroundColorView.frame = CGRect(x: 0, y: 8, width: 52, height: 52)
         backgroundColorView.layer.cornerRadius = backgroundColorView.frame.width / 2.0
@@ -78,6 +85,7 @@ class FriendTableViewCell: UITableViewCell, UIScrollViewDelegate {
         photoImageView.tag = 200
         photoImageView.opaque = true
         photoImageView.layer.borderWidth = 2
+        
         initialsLabel.frame = CGRect(x: 0, y: 0, width: photoImageView.frame.width, height: photoImageView.frame.height)
         initialsLabel.font = UIFont(name: "HelveticaNeue-Thin", size: 21)!
         initialsLabel.textColor = UIColor.blackColor()

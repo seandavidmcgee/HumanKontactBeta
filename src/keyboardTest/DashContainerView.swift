@@ -48,7 +48,6 @@ class DashContainerView: UIViewController {
             socialButton.badgeString = dashBadgeStrings[socialIndex]
             socialButton.badgeEdgeInsets = insets
             dashArray.append(socialButton)
-            socialButton.addTarget(self, action: "dashPressed:", forControlEvents: UIControlEvents.TouchDown)
             
             self.view.addSubview(socialButton)
             socialIndex++

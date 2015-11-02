@@ -45,6 +45,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, WCSessionDelegate {
             Defaults[.backup] = "yes"
         }
         
+        if Defaults[.landing] == "" {
+            Defaults[.landing] = "contacts"
+        }
+        
+        if Defaults[.layout] == "" {
+            Defaults[.layout] = "grid"
+        }
+        
         let settings = UIUserNotificationSettings(
             forTypes: [.Badge, .Sound, .Alert], categories: nil)
         UIApplication.sharedApplication().registerUserNotificationSettings(settings)

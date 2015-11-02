@@ -16,7 +16,9 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
     let sortNameSwitch = DGRunkeeperSwitch()
     let orderNameSwitch = DGRunkeeperSwitch()
     let backupSwitch = DGRunkeeperSwitch()
-
+    let landingSwitch = DGRunkeeperSwitch()
+    let layoutSwitch = DGRunkeeperSwitch()
+    
     var dismissBut = UIButton()
     var barTitle = UILabel()
     let sortCellIdentifier = "Sort"
@@ -27,9 +29,9 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
         super.viewDidLoad()
         self.view.backgroundColor = UIColor(hex: 0xF8F8F8)
         navigationController?.delegate = self
-        masterTableView.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height)
         masterTableView.delegate = self
         masterTableView.dataSource = self
+        masterTableView.frame = CGRect(x: 0, y: 44, width: self.view.frame.width, height: 356)
         masterTableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: sortCellIdentifier)
         masterTableView.separatorStyle = .None
         view.addSubview(masterTableView)
@@ -49,7 +51,7 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
         super.viewWillAppear(animated)
         initSettings()
         self.automaticallyAdjustsScrollViewInsets = false
-        masterTableView.showsVerticalScrollIndicator = true
+        masterTableView.showsVerticalScrollIndicator = false
         masterTableView.delaysContentTouches = false
         masterTableView.backgroundColor = UIColor.clearColor()
         
@@ -76,11 +78,11 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // Return the number of rows in the section.
-        return 4
+        return 6
     }
     
     func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        return 54.0
+        return 64.0
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -89,7 +91,7 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
         cell.backgroundColor = UIColor.clearColor()
         cell.textLabel!.textColor = UIColor.blackColor()
         cell.textLabel!.font = UIFont(name: "HelveticaNeue-Light", size: 17)
-        cell.textLabel!.frame = CGRectMake(15, 17, masterTableView.frame.width - 215, 20)
+        cell.textLabel!.frame = CGRectMake(15, 34, 150, 20)
         cell.selectionStyle = UITableViewCellSelectionStyle.None
         
         switch (indexPath.row) {
@@ -110,24 +112,18 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
             let backupSwitch = backupSwitchSetup()
             cell.textLabel!.text = "Data Backup"
             cell.addSubview(backupSwitch)
+        case 4:
+            let landingSwitch = landingSwitchSetup()
+            cell.textLabel!.text = "Default Landing Page"
+            cell.addSubview(landingSwitch)
+        case 5:
+            let layoutSwitch = layoutSwitchSetup()
+            cell.textLabel!.text = "Default Layout"
+            cell.addSubview(layoutSwitch)
         default:
             cell.textLabel!.text = "None Available"
         }
         return cell
-    }
-    
-    func orientSwitchSetup() -> DGRunkeeperSwitch {
-        let switchX = masterTableView.frame.width - 165
-        orientSwitch.leftTitle = "Left"
-        orientSwitch.rightTitle = "Right"
-        orientSwitch.backgroundColor = UIColor(red: 82 / 255.0, green: 112 / 255.0, blue: 235 / 255.0, alpha: 1.0)
-        orientSwitch.selectedBackgroundColor = .whiteColor()
-        orientSwitch.titleColor = .whiteColor()
-        orientSwitch.selectedTitleColor = UIColor(red: 82 / 255.0, green: 112 / 255.0, blue: 235 / 255.0, alpha: 1.0)
-        orientSwitch.titleFont = UIFont(name: "AvenirNext-Regular", size: 15.0)
-        orientSwitch.frame = CGRect(x: switchX, y: 12.0, width: 150.0, height: 30.0)
-        orientSwitch.addTarget(self, action: Selector("orientValueDidChange:"), forControlEvents: .ValueChanged)
-        return orientSwitch
     }
     
     func sortSwitchSetup() -> DGRunkeeperSwitch {
@@ -140,7 +136,7 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
         sortNameSwitch.titleColor = .whiteColor()
         sortNameSwitch.selectedTitleColor = UIColor(red: 82 / 255.0, green: 112 / 255.0, blue: 235 / 255.0, alpha: 1.0)
         sortNameSwitch.titleFont = UIFont(name: "AvenirNext-Regular", size: 15.0)
-        sortNameSwitch.frame = CGRect(x: switchX, y: 12.0, width: 200.0, height: 30.0)
+        sortNameSwitch.frame = CGRect(x: switchX, y: 19.0, width: 200.0, height: 30.0)
         sortNameSwitch.addTarget(self, action: Selector("sortValueDidChange:"), forControlEvents: .ValueChanged)
         return sortNameSwitch
     }
@@ -155,9 +151,23 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
         orderNameSwitch.titleColor = .whiteColor()
         orderNameSwitch.selectedTitleColor = UIColor(red: 82 / 255.0, green: 112 / 255.0, blue: 235 / 255.0, alpha: 1.0)
         orderNameSwitch.titleFont = UIFont(name: "AvenirNext-Regular", size: 15.0)
-        orderNameSwitch.frame = CGRect(x: switchX, y: 12.0, width: 150.0, height: 30.0)
+        orderNameSwitch.frame = CGRect(x: switchX, y: 19.0, width: 150.0, height: 30.0)
         orderNameSwitch.addTarget(self, action: Selector("orderValueDidChange:"), forControlEvents: .ValueChanged)
         return orderNameSwitch
+    }
+    
+    func orientSwitchSetup() -> DGRunkeeperSwitch {
+        let switchX = masterTableView.frame.width - 165
+        orientSwitch.leftTitle = "Left"
+        orientSwitch.rightTitle = "Right"
+        orientSwitch.backgroundColor = UIColor(red: 82 / 255.0, green: 112 / 255.0, blue: 235 / 255.0, alpha: 1.0)
+        orientSwitch.selectedBackgroundColor = .whiteColor()
+        orientSwitch.titleColor = .whiteColor()
+        orientSwitch.selectedTitleColor = UIColor(red: 82 / 255.0, green: 112 / 255.0, blue: 235 / 255.0, alpha: 1.0)
+        orientSwitch.titleFont = UIFont(name: "AvenirNext-Regular", size: 15.0)
+        orientSwitch.frame = CGRect(x: switchX, y: 19.0, width: 150.0, height: 30.0)
+        orientSwitch.addTarget(self, action: Selector("orientValueDidChange:"), forControlEvents: .ValueChanged)
+        return orientSwitch
     }
     
     func backupSwitchSetup() -> DGRunkeeperSwitch {
@@ -169,9 +179,37 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
         backupSwitch.titleColor = .whiteColor()
         backupSwitch.selectedTitleColor = UIColor(red: 82 / 255.0, green: 112 / 255.0, blue: 235 / 255.0, alpha: 1.0)
         backupSwitch.titleFont = UIFont(name: "AvenirNext-Regular", size: 15.0)
-        backupSwitch.frame = CGRect(x: switchX, y: 12.0, width: 100.0, height: 30.0)
+        backupSwitch.frame = CGRect(x: switchX, y: 19.0, width: 100.0, height: 30.0)
         backupSwitch.addTarget(self, action: Selector("backupValueDidChange:"), forControlEvents: .ValueChanged)
         return backupSwitch
+    }
+    
+    func landingSwitchSetup() -> DGRunkeeperSwitch {
+        let switchX = masterTableView.frame.width - 165
+        landingSwitch.leftTitle = "Contacts"
+        landingSwitch.rightTitle = "Recents"
+        landingSwitch.backgroundColor = UIColor(red: 82 / 255.0, green: 112 / 255.0, blue: 235 / 255.0, alpha: 1.0)
+        landingSwitch.selectedBackgroundColor = .whiteColor()
+        landingSwitch.titleColor = .whiteColor()
+        landingSwitch.selectedTitleColor = UIColor(red: 82 / 255.0, green: 112 / 255.0, blue: 235 / 255.0, alpha: 1.0)
+        landingSwitch.titleFont = UIFont(name: "AvenirNext-Regular", size: 15.0)
+        landingSwitch.frame = CGRect(x: switchX, y: 19.0, width: 150.0, height: 30.0)
+        landingSwitch.addTarget(self, action: Selector("landingValueDidChange:"), forControlEvents: .ValueChanged)
+        return landingSwitch
+    }
+    
+    func layoutSwitchSetup() -> DGRunkeeperSwitch {
+        let switchX = masterTableView.frame.width - 115
+        layoutSwitch.leftTitle = "Grid"
+        layoutSwitch.rightTitle = "List"
+        layoutSwitch.backgroundColor = UIColor(red: 82 / 255.0, green: 112 / 255.0, blue: 235 / 255.0, alpha: 1.0)
+        layoutSwitch.selectedBackgroundColor = .whiteColor()
+        layoutSwitch.titleColor = .whiteColor()
+        layoutSwitch.selectedTitleColor = UIColor(red: 82 / 255.0, green: 112 / 255.0, blue: 235 / 255.0, alpha: 1.0)
+        layoutSwitch.titleFont = UIFont(name: "AvenirNext-Regular", size: 15.0)
+        layoutSwitch.frame = CGRect(x: switchX, y: 19.0, width: 100.0, height: 30.0)
+        layoutSwitch.addTarget(self, action: Selector("layoutValueDidChange:"), forControlEvents: .ValueChanged)
+        return layoutSwitch
     }
     
     func dismiss() {
@@ -185,6 +223,8 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
         sortSettings()
         orderSettings()
         backupSettings()
+        landingSettings()
+        layoutSettings()
     }
     
     func orientSettings() {
@@ -219,6 +259,22 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
         }
     }
     
+    func landingSettings() {
+        if Defaults[.landing] == "contacts" {
+            landingSwitch.setSelectedIndex(0, animated: true)
+        } else {
+            landingSwitch.setSelectedIndex(1, animated: true)
+        }
+    }
+    
+    func layoutSettings() {
+        if Defaults[.layout] == "grid" {
+            layoutSwitch.setSelectedIndex(0, animated: true)
+        } else {
+            layoutSwitch.setSelectedIndex(1, animated: true)
+        }
+    }
+    
     func orientValueDidChange(sender:DGRunkeeperSwitch) {
         print("orient changed")
         GlobalVariables.sharedManager.keyboardOrientChanged = true
@@ -250,6 +306,22 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
             Defaults[.backup] = "no"
         } else if sender.selectedIndex == 1 {
             Defaults[.backup] = "yes"
+        }
+    }
+    
+    func landingValueDidChange(sender:DGRunkeeperSwitch) {
+        if sender.selectedIndex == 0 {
+            Defaults[.landing] = "contacts"
+        } else if sender.selectedIndex == 1 {
+            Defaults[.landing] = "recents"
+        }
+    }
+    
+    func layoutValueDidChange(sender:DGRunkeeperSwitch) {
+        if sender.selectedIndex == 0 {
+            Defaults[.layout] = "grid"
+        } else if sender.selectedIndex == 1 {
+            Defaults[.layout] = "list"
         }
     }
 }

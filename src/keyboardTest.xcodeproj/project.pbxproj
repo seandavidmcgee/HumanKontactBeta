@@ -28,7 +28,6 @@
 		7550E8B11B726C98006B484B /* messageIcon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7550E8AD1B726C98006B484B /* messageIcon@2x.png */; };
 		7550E8B21B726C98006B484B /* successIcon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7550E8AE1B726C98006B484B /* successIcon@2x.png */; };
 		7550E8B31B726C98006B484B /* warningIcon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7550E8AF1B726C98006B484B /* warningIcon@2x.png */; };
-		7554A33F1BE4135900F7D8E5 /* libwatchkannuu-release.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75DA7E161BCECA13004DF511 /* libwatchkannuu-release.a */; };
 		755C09751BDFD3ED0072F924 /* HKIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755C09741BDFD3ED0072F924 /* HKIndex.swift */; };
 		755EC21D1BD7F65600A63196 /* AddressBookExternalChangeCallback.m in Sources */ = {isa = PBXBuildFile; fileRef = 755EC21C1BD7F65600A63196 /* AddressBookExternalChangeCallback.m */; };
 		755EC2231BD81AD400A63196 /* HKWatchAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755EC2221BD81AD400A63196 /* HKWatchAddress.swift */; };
@@ -60,6 +59,7 @@
 		7590E8981BBDCCE70071CBBA /* LiquittableCircle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7590E88E1BBDCCE70071CBBA /* LiquittableCircle.swift */; };
 		7590E8991BBDCCE70071CBBA /* SimpleCircleLiquidEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7590E88F1BBDCCE70071CBBA /* SimpleCircleLiquidEngine.swift */; };
 		7590E89A1BBDCCE70071CBBA /* UIColorEx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7590E8901BBDCCE70071CBBA /* UIColorEx.swift */; };
+		759330E41BE52F720032850B /* libwatchkannuu-sim.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75DA7E181BCECFBC004DF511 /* libwatchkannuu-sim.a */; };
 		759894F21BB45EF6001A63C7 /* click.wav in Resources */ = {isa = PBXBuildFile; fileRef = 759894F11BB45EF6001A63C7 /* click.wav */; };
 		759894F51BB491AD001A63C7 /* EMPartialModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759894F41BB491AD001A63C7 /* EMPartialModalViewController.swift */; };
 		759894F71BB492BC001A63C7 /* PrimaryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759894F61BB492BC001A63C7 /* PrimaryViewController.swift */; };
@@ -435,7 +435,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				75F43B1C1BE01FE800C7B75A /* Realm.framework in Frameworks */,
-				7554A33F1BE4135900F7D8E5 /* libwatchkannuu-release.a in Frameworks */,
+				759330E41BE52F720032850B /* libwatchkannuu-sim.a in Frameworks */,
 				75F43B1D1BE01FE800C7B75A /* RealmSwift.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
