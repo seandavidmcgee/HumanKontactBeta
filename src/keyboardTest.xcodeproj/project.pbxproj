@@ -59,7 +59,6 @@
 		7590E8981BBDCCE70071CBBA /* LiquittableCircle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7590E88E1BBDCCE70071CBBA /* LiquittableCircle.swift */; };
 		7590E8991BBDCCE70071CBBA /* SimpleCircleLiquidEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7590E88F1BBDCCE70071CBBA /* SimpleCircleLiquidEngine.swift */; };
 		7590E89A1BBDCCE70071CBBA /* UIColorEx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7590E8901BBDCCE70071CBBA /* UIColorEx.swift */; };
-		759330E41BE52F720032850B /* libwatchkannuu-sim.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75DA7E181BCECFBC004DF511 /* libwatchkannuu-sim.a */; };
 		759894F21BB45EF6001A63C7 /* click.wav in Resources */ = {isa = PBXBuildFile; fileRef = 759894F11BB45EF6001A63C7 /* click.wav */; };
 		759894F51BB491AD001A63C7 /* EMPartialModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759894F41BB491AD001A63C7 /* EMPartialModalViewController.swift */; };
 		759894F71BB492BC001A63C7 /* PrimaryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759894F61BB492BC001A63C7 /* PrimaryViewController.swift */; };
@@ -105,6 +104,7 @@
 		75BAF6341BD95CEA0013295E /* eminem.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 75BAF62F1BD95CEA0013295E /* eminem.jpg */; };
 		75BAF6351BD95CEA0013295E /* pontoon.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 75BAF6301BD95CEA0013295E /* pontoon.jpg */; };
 		75BAF6361BD95CEA0013295E /* survivor.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 75BAF6311BD95CEA0013295E /* survivor.jpg */; };
+		75C62B481BE7BBBE00216DC9 /* libwatchkannuu-release.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75DA7E161BCECA13004DF511 /* libwatchkannuu-release.a */; };
 		75D2ED5C1B8E0F330001737C /* DashContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D2ED5B1B8E0F330001737C /* DashContainerView.swift */; };
 		75D8C3A51B42F3C900EA3137 /* HKPerson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D8C3A41B42F3C900EA3137 /* HKPerson.swift */; };
 		75D8C3A71B42F3E600EA3137 /* HKPhoneNumber.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D8C3A61B42F3E600EA3137 /* HKPhoneNumber.swift */; };
@@ -435,7 +435,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				75F43B1C1BE01FE800C7B75A /* Realm.framework in Frameworks */,
-				759330E41BE52F720032850B /* libwatchkannuu-sim.a in Frameworks */,
+				75C62B481BE7BBBE00216DC9 /* libwatchkannuu-release.a in Frameworks */,
 				75F43B1D1BE01FE800C7B75A /* RealmSwift.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -587,7 +587,7 @@
 			path = Classes;
 			sourceTree = "<group>";
 		};
-		75B15D6F1BD6BC9800E666B4 /* AB Models */ = {
+		75B15D6F1BD6BC9800E666B4 /* AB Operations */ = {
 			isa = PBXGroup;
 			children = (
 				755EC21E1BD7F68300A63196 /* AddressBookExternalChangeCallback.h */,
@@ -595,7 +595,7 @@
 				75B15D6B1BD6BB0C00E666B4 /* AddressBookModel.swift */,
 				75B15D6D1BD6BC1500E666B4 /* SyncAddressBookOperation.swift */,
 			);
-			name = "AB Models";
+			name = "AB Operations";
 			sourceTree = "<group>";
 		};
 		75BAF6151BD948740013295E /* Dashboard */ = {
@@ -775,7 +775,7 @@
 				8EF27BBA1AAFFD7400F93112 /* AppDelegate.swift */,
 				758C765C1B9E220800AA1F56 /* SingletonManager.swift */,
 				758C765A1B9CEF3A00AA1F56 /* Utilities.swift */,
-				75B15D6F1BD6BC9800E666B4 /* AB Models */,
+				75B15D6F1BD6BC9800E666B4 /* AB Operations */,
 				756950441B6041D700DA5038 /* ActivityKeys.swift */,
 				8EF27BBE1AAFFD7400F93112 /* Main.storyboard */,
 				752E675E1B1F894500D96230 /* LaunchScreen.storyboard */,

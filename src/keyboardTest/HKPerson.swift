@@ -157,10 +157,6 @@ extension HKPerson {
             print("kABRecordInvalidID")
         }
         
-        nameColor = nameColor(Int(recordId))
-        
-        avatarColor = avatarImage(Int(recordId))
-        
         firstName = ABRecordCopyValue(person, kABPersonFirstNameProperty)?.takeRetainedValue() as! String? ?? ABRecordCopyValue(person, kABPersonOrganizationProperty)?.takeRetainedValue() as! String? ?? "N/A"
         lastName = ABRecordCopyValue(person, kABPersonLastNameProperty)?.takeRetainedValue() as! String? ?? ""
         middleName = ABRecordCopyValue(person, kABPersonMiddleNameProperty)?.takeRetainedValue() as! String? ?? ""
@@ -297,13 +293,15 @@ extension HKPerson {
     }
     
     func indexOrderOperation(results: [AnyObject]) {
-        let realm = try! Realm()
+        let realm = RealmManager.setupRealmInApp()
         let dataItems = realm.objects(HKPerson)
         var i = 0
         for result in results {
             let people = dataItems.filter("fullName BEGINSWITH[c] %@", "\(result)")
             for person in people {
                 person.indexedOrder = i
+                person.nameColor = nameColor(Int(i))
+                person.avatarColor = avatarImage(Int(i))
             }
             i++
         }

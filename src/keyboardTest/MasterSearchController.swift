@@ -299,11 +299,14 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
     
     func liquidFloatingActionButton(liquidFloatingActionButton: LiquidFloatingActionButton, didSelectItemAtIndex index: Int) {
         if index == 2 {
-            _ = NSTimer.scheduledTimerWithTimeInterval(0.5, target: self, selector: Selector("sortTableViewSettings"), userInfo: nil, repeats: false)
+            _ = NSTimer.scheduledTimerWithTimeInterval(0.6, target: self, selector: Selector("sortTableViewSettings"), userInfo: nil, repeats: false)
         }
-        blurredImageView.removeFromSuperview()
         self.button.showsMenu = !self.button.showsMenu
         floatingActionButton.close()
+        bodyView.hidden = false
+        keyboardButton.enabled = true
+        dashTransition.enabled = true
+        blurredImageView.removeFromSuperview()
     }
 
     func sortTableViewSettings() {
@@ -619,7 +622,7 @@ class MasterSearchController: UIViewController, UITableViewDelegate, UITableView
         let cell: FriendTableViewCell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as! FriendTableViewCell
         cell.selectionStyle = UITableViewCellSelectionStyle.None
         
-        cell.contentView.backgroundColor = UIColor(hexString: hkPerson.nameColor).colorWithAlphaComponent(0.08)
+        //cell.contentView.backgroundColor = UIColor(hexString: hkPerson.nameColor).colorWithAlphaComponent(0.05)
         
         cell.photoImageView!.layer.borderColor = UIColor(hexString: hkPerson.nameColor).CGColor
         cell.backgroundColorView.backgroundColor = UIColor(hexString: hkPerson.nameColor)

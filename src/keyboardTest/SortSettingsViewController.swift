@@ -51,7 +51,7 @@ class SortSettingsViewController: UIViewController, UITableViewDelegate, UITable
         super.viewWillAppear(animated)
         initSettings()
         self.automaticallyAdjustsScrollViewInsets = false
-        masterTableView.showsVerticalScrollIndicator = false
+        masterTableView.showsVerticalScrollIndicator = true
         masterTableView.delaysContentTouches = false
         masterTableView.backgroundColor = UIColor.clearColor()
         
